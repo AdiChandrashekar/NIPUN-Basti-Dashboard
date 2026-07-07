@@ -118,49 +118,79 @@ export function computeBlockStats(rows, meta) {
   return { months, blocks, byMonth }
 }
 
-export function computeSchoolHighlights(rows, meta) {
+// Full per-school table for a given month: average + zero-count over whatever
+// competencies are passed in (already filtered by the caller), plus change vs
+// the previous month in the sorted month list (not necessarily monthKey's
+// immediate predecessor in real time, just the previous one with data).
+export function computeSchoolTable(rows, meta, monthKey) {
   const months = getMonthList(rows)
-  const latest = months[months.length - 1]
-  if (!latest) return { zeroLeaders: [], improvers: [], decliners: [] }
-  const latestRows = rows.filter((r) => r.Month === latest.key)
+  const idx = months.findIndex((m) => m.key === monthKey)
+  if (idx === -1) return { rows: [], prevMonth: null }
+  const monthRows = rows.filter((r) => r.Month === monthKey)
+  const codes = meta.map((c) => c.Code)
+  const rowAvg = (r) => mean(codes.map((c) => r[c]))
+  const rowZero = (r) => codes.filter((c) => r[c] === 0).length
 
-  const zeroLeaders = latestRows
-    .map((r) => ({
+  const prevMonth = idx > 0 ? months[idx - 1] : null
+  const prevByCode = prevMonth ? new Map(rows.filter((r) => r.Month === prevMonth.key).map((r) => [r.SchoolCode, r])) : null
+
+  const table = monthRows.map((r) => {
+    const avg = rowAvg(r)
+    const zeroCount = rowZero(r)
+    let change = null
+    if (prevByCode && prevByCode.has(r.SchoolCode)) {
+      const prevAvg = rowAvg(prevByCode.get(r.SchoolCode))
+      change = avg !== null && prevAvg !== null ? round(avg - prevAvg) : null
+    }
+    return {
       block: r.Block,
       school: r.School,
-      zeroCount: meta.filter((c) => r[c.Code] === 0).length,
-    }))
-    .sort((a, b) => b.zeroCount - a.zeroCount)
-    .slice(0, 5)
+      schoolCode: r.SchoolCode,
+      total: r.Total,
+      avg: round(avg),
+      zeroCount,
+      compCount: codes.length,
+      change,
+    }
+  })
 
-  let improvers = []
-  let decliners = []
-  if (months.length >= 2) {
-    const prev = months[months.length - 2]
-    const prevRows = rows.filter((r) => r.Month === prev.key)
-    const prevByCode = new Map(prevRows.map((r) => [r.SchoolCode, r]))
-    const codes = meta.map((c) => c.Code)
-    const rowAvg = (r) => mean(codes.map((c) => r[c]))
-    const paired = latestRows
-      .filter((r) => prevByCode.has(r.SchoolCode))
-      .map((r) => {
-        const p = prevByCode.get(r.SchoolCode)
-        const avgPrev = rowAvg(p)
-        const avgCur = rowAvg(r)
-        return {
-          block: r.Block,
-          school: r.School,
-          avgPrev: round(avgPrev),
-          avgCur: round(avgCur),
-          change: avgPrev !== null && avgCur !== null ? round(avgCur - avgPrev) : null,
-        }
-      })
-      .filter((r) => r.change !== null)
-    improvers = [...paired].sort((a, b) => b.change - a.change).slice(0, 5)
-    decliners = [...paired].sort((a, b) => a.change - b.change).slice(0, 5)
+  return { rows: table, prevMonth }
+}
+
+// Month-by-month series for a set of blocks or a set of competency codes, for
+// the Compare tab. dimension: 'block' | 'competency'.
+export function computeCompareSeries(rows, meta, dimension, items) {
+  const months = getMonthList(rows)
+  const codes = meta.map((c) => c.Code)
+
+  if (dimension === 'block') {
+    const series = items.map((block) => ({
+      key: block,
+      label: block,
+      values: months.map((m) => {
+        const blockRows = rows.filter((r) => r.Month === m.key && r.Block === block)
+        const avg = mean(blockRows.map((r) => mean(codes.map((c) => r[c]))))
+        return { monthKey: m.key, monthLabel: m.label, avg: round(avg) }
+      }),
+    }))
+    return { months, series }
   }
 
-  return { latestMonth: latest, zeroLeaders, improvers, decliners }
+  // dimension === 'competency'
+  const series = items.map((code) => {
+    const compMeta = meta.find((c) => c.Code === code)
+    return {
+      key: code,
+      label: code,
+      desc: compMeta?.desc,
+      values: months.map((m) => {
+        const monthRows = rows.filter((r) => r.Month === m.key)
+        const avg = mean(monthRows.map((r) => r[code]).filter((v) => typeof v === 'number' && !Number.isNaN(v)))
+        return { monthKey: m.key, monthLabel: m.label, avg: round(avg) }
+      }),
+    }
+  })
+  return { months, series }
 }
 
 export function topBottomCompetencies(competencyStats, monthKey, count = 5) {

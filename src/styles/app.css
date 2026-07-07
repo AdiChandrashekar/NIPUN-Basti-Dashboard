@@ -260,6 +260,227 @@ table.data-table tbody tr:hover {
   color: var(--text-secondary);
 }
 
+.filter-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  flex-wrap: wrap;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 14px 16px;
+  margin-bottom: 20px;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.filter-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.month-select {
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  color: var(--text-primary);
+  border-radius: var(--radius-control);
+  padding: 6px 10px;
+  font-size: 13px;
+  min-width: 140px;
+}
+
+.chip-row {
+  display: flex;
+  gap: 6px;
+}
+
+.chip {
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  color: var(--text-secondary);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.chip.active {
+  background: var(--series-1);
+  border-color: var(--series-1);
+  color: white;
+}
+
+.filter-reset {
+  border: 1px solid var(--critical);
+  background: none;
+  color: var(--critical);
+  border-radius: var(--radius-control);
+  padding: 7px 12px;
+  font-size: 12.5px;
+  cursor: pointer;
+  height: fit-content;
+}
+
+.multiselect {
+  position: relative;
+}
+
+.multiselect-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  color: var(--text-primary);
+  border-radius: var(--radius-control);
+  padding: 5px 30px 5px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  position: relative;
+  min-width: 150px;
+  text-align: left;
+}
+
+.multiselect-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.multiselect-summary {
+  font-size: 13px;
+}
+
+.multiselect-caret {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.multiselect-pop {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 20;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  width: 260px;
+  padding: 8px;
+}
+
+.multiselect-search {
+  width: 100%;
+  border: 1px solid var(--border);
+  background: var(--page-plane);
+  color: var(--text-primary);
+  border-radius: var(--radius-control);
+  padding: 6px 8px;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.multiselect-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.multiselect-actions button {
+  flex: 1;
+  border: 1px solid var(--border);
+  background: var(--page-plane);
+  color: var(--text-secondary);
+  border-radius: var(--radius-control);
+  padding: 5px 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.multiselect-list {
+  max-height: 220px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.multiselect-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 6px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.multiselect-item:hover {
+  background: var(--page-plane);
+}
+
+.multiselect-empty {
+  color: var(--text-muted);
+  font-size: 12.5px;
+  padding: 8px 6px;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 12px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+.pagination button {
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  color: var(--text-primary);
+  border-radius: var(--radius-control);
+  padding: 4px 10px;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.search-input {
+  border: 1px solid var(--border);
+  background: var(--page-plane);
+  color: var(--text-primary);
+  border-radius: var(--radius-control);
+  padding: 6px 10px;
+  font-size: 13px;
+  width: 220px;
+  margin-bottom: 12px;
+}
+
+.compare-controls {
+  display: flex;
+  gap: 14px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
 .footer-note {
   font-size: 12px;
   color: var(--text-muted);

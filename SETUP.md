@@ -1,97 +1,68 @@
-# Connecting the dashboard to a live Google Sheet
+# Going live: connect a Google Sheet
 
-By default this dashboard reads a bundled CSV snapshot (`public/data/*.csv`, April–June
-2026) so it works immediately with zero setup. To make it **live** — so that editing a
-Google Sheet updates the deployed site without touching code — follow the steps below.
+The dashboard works right now with no setup (it reads a bundled snapshot). This guide
+is only for making it **live**, so editing a Google Sheet updates the website with no
+code changes.
 
-This is a one-time setup. After it's done, **adding a new month is just adding rows to
-a spreadsheet** (see the last section).
+Do part A once. Then every future month is just part B.
 
-## 1. Create the Google Sheet
+---
 
-1. Go to [Google Sheets](https://sheets.google.com) and create a new blank spreadsheet.
-2. `File > Import > Upload`, choose `data-prep/Basti_Sheets_Import.xlsx` from this repo.
-3. When prompted, choose **"Insert new sheet(s)"** (not "Replace spreadsheet") so both
-   tabs come in cleanly: `Raw_Scores` and `Competency_Meta`.
-4. Delete the default empty `Sheet1` tab if it's still there.
-5. Rename the spreadsheet to something like "NIPUN Basti Tracker".
+## Part A — one-time setup (~10 minutes)
 
-You should end up with exactly two tabs:
+**Step 1: Import the data into a new Google Sheet**
+1. Go to [sheets.google.com](https://sheets.google.com) → blank spreadsheet.
+2. `File → Import → Upload` → choose `data-prep/Basti_Sheets_Import.xlsx` from this repo.
+3. Choose **"Insert new sheet(s)"** when asked.
+4. Delete the empty `Sheet1` tab if one was created.
 
-- **Raw_Scores** — one row per school per month. Columns: `Month, MonthLabel, Block,
-  Arrtype, SchoolCode, School, Total, H104.2, H106.1, … H301` (23 competency columns).
-- **Competency_Meta** — one row per competency code: `Code, Desc, Grade, Subject`.
-  You won't need to touch this again unless the assessment adds/removes competencies.
+You should now have two tabs: `Raw_Scores` and `Competency_Meta`.
 
-## 2. Publish both tabs to the web as CSV
+**Step 2: Publish `Raw_Scores` as a CSV link**
+1. `File → Share → Publish to web`.
+2. First dropdown: choose **Raw_Scores** (not "Entire document").
+3. Second dropdown: choose **Comma-separated values (.csv)**.
+4. Click **Publish** → copy the link it gives you.
 
-Google Sheets can serve a single tab as a live, public, read-only CSV link — that's
-what the dashboard fetches.
+**Step 3: Publish `Competency_Meta` as a CSV link**
+- Repeat step 2, choosing the **Competency_Meta** tab instead. Copy that link too.
 
-1. `File > Share > Publish to web`.
-2. In the first dropdown, select **Raw_Scores** (not "Entire Document").
-3. In the second dropdown, select **Comma-separated values (.csv)**.
-4. Click **Publish**, confirm, and copy the URL it gives you.
-5. Repeat steps 2–4, this time selecting the **Competency_Meta** tab.
+You now have two links, both ending in `output=csv`.
 
-You'll end up with two URLs that look like:
-```
-https://docs.google.com/spreadsheets/d/e/2PACX-.../pub?gid=123456&single=true&output=csv
-```
+**Step 4: Paste both links into the app**
+1. Open `src/config.js` in this repo.
+2. Paste your two links in:
+   ```js
+   const GOOGLE_SHEETS_RAW_SCORES_URL = 'paste your Raw_Scores link here'
+   const GOOGLE_SHEETS_COMPETENCY_META_URL = 'paste your Competency_Meta link here'
+   ```
+3. Save, commit, and push to GitHub.
 
-Keep both — you need them for the next step. (This published link is **read-only** —
-viewers can never edit your sheet through it, and it does not require anyone to be
-logged into Google.)
+That's it — the deployed site now reads live from your Google Sheet.
 
-## 3. Point the dashboard at those URLs
+---
 
-Open `src/config.js` and paste the two URLs in:
+## Part B — adding a new month (every month, ~2 minutes)
 
-```js
-const GOOGLE_SHEETS_RAW_SCORES_URL = 'https://docs.google.com/spreadsheets/d/e/.../pub?gid=...&output=csv'
-const GOOGLE_SHEETS_COMPETENCY_META_URL = 'https://docs.google.com/spreadsheets/d/e/.../pub?gid=...&output=csv'
-```
+1. Open the Google Sheet → `Raw_Scores` tab.
+2. Go to the bottom of the sheet and paste in the new month's rows.
+3. Use the **same column order** as the existing rows — don't add new columns, don't
+   make a new tab. Just new rows at the bottom.
+   - `Month` column: `YYYY-MM`, e.g. `2026-07`.
+   - `MonthLabel` column: what should be displayed, e.g. `July`.
+4. Done. Reload the website (wait a minute or two if it doesn't show up right away —
+   Google's CSV cache refreshes on a short delay).
 
-Commit and push. GitHub Actions rebuilds and redeploys automatically (see the repo's
-Actions tab). From now on, the **live site reads directly from the Google Sheet** —
-you don't need to push code again to update data.
+No code, no rebuild, no redeploy. The new month appears in every chart and ranking
+automatically, and gets flagged as "preliminary" on its own if it has far fewer
+schools than the other months so far.
 
-(Alternative for local dev only: set `VITE_RAW_SCORES_URL` and
-`VITE_COMPETENCY_META_URL` in a `.env` file instead of editing `config.js` — either
-works, but only editing `config.js` and pushing will update the deployed GitHub Pages
-site, since Vite env vars are baked in at build time.)
-
-## 4. Adding a new month later
-
-This is the part that "just works" once the above is set up:
-
-1. Open the Google Sheet, go to the **Raw_Scores** tab.
-2. Scroll to the bottom and paste in the new month's rows, in the exact same column
-   order: `Month, MonthLabel, Block, Arrtype, SchoolCode, School, Total`, then the 23
-   competency score columns.
-   - `Month` must be `YYYY-MM` format (e.g. `2026-07`) — the dashboard sorts
-     chronologically by this value.
-   - `MonthLabel` is what's displayed (e.g. `July`).
-   - Column headers themselves never change — you're only ever adding **rows**, never
-     new columns or new tabs.
-3. That's it. Reload the deployed dashboard (may take a minute or two for Google's
-   publish cache to refresh) — the new month appears automatically in every chart,
-   table, and ranking. No code changes, no redeploy.
-
-The dashboard automatically:
-- Adds the new month to the trend line and all month-over-month comparisons
-- Flags the new month as **"partial / preliminary"** (shown with a warning banner) if
-  its school count is under 30% of the largest month on file — exactly like June 2026
-  was flagged in this dataset. That warning clears on its own once coverage catches up.
+---
 
 ## Troubleshooting
 
-- **Dashboard shows old / no data**: confirm `File > Share > Publish to web` is still
-  active for both tabs (it can be revoked if someone re-shares the sheet), and that
-  the URLs in `config.js` exactly match what Google gave you (including the `gid=`
-  parameter, which is tab-specific).
-- **A new month doesn't show up**: double check the `Month` column uses `YYYY-MM` and
-  that competency column headers match `Competency_Meta`'s `Code` column exactly
-  (including spacing, e.g. `M 101.1 (A)`).
-- **Numbers look wrong**: blank/non-numeric cells in a competency column are treated
-  as "not assessed" and excluded from averages — they are not treated as zero.
+| Problem | Fix |
+|---|---|
+| Site shows old/no data | Re-check `Publish to web` is still on for both tabs, and the links in `config.js` match exactly (including the `gid=` part) |
+| New month doesn't show up | Check `Month` is `YYYY-MM`, and competency column headers match `Competency_Meta` exactly |
+| A number looks wrong | Blank cells mean "not assessed" and are excluded from averages — they are not counted as a zero score |

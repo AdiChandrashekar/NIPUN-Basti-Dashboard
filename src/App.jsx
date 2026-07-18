@@ -10,7 +10,6 @@ import {
   topBottomCompetencies,
 } from './lib/analysis'
 
-import ThemeToggle from './components/ThemeToggle'
 import MonthBadges from './components/MonthBadges'
 import CoverageBanner from './components/CoverageBanner'
 import KpiCards from './components/KpiCards'
@@ -147,7 +146,6 @@ export default function App() {
           <button type="button" className="chip" onClick={() => setView(view === 'dashboard' ? 'compare' : 'dashboard')}>
             {view === 'dashboard' ? 'Compare with SSP dashboard' : '← Back to dashboard'}
           </button>
-          <ThemeToggle />
         </div>
       </header>
 

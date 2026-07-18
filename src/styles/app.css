@@ -24,16 +24,6 @@
   font-size: 14px;
 }
 
-.theme-toggle {
-  border: 1px solid var(--border);
-  background: var(--surface-1);
-  color: var(--text-primary);
-  border-radius: var(--radius-control);
-  padding: 6px 12px;
-  font-size: 13px;
-  cursor: pointer;
-}
-
 .month-badges {
   display: flex;
   gap: 8px;

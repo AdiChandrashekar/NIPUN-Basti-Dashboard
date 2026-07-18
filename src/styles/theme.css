@@ -1,74 +1,49 @@
 :root {
-  --surface-1: #fcfcfb;
-  --page-plane: #f9f9f7;
-  --text-primary: #0b0b0b;
-  --text-secondary: #52514e;
-  --text-muted: #898781;
-  --gridline: #e1e0d9;
-  --baseline: #c3c2b7;
-  --border: rgba(11, 11, 11, 0.1);
+  /* Backgrounds / surfaces — mirrors the SSP dashboard's paper-on-cream look */
+  --surface-1: #ffffff;
+  --page-plane: #faf7f2;
 
-  --series-1: #2a78d6; /* blue */
-  --series-2: #1baf7a; /* aqua */
-  --series-3: #eda100; /* yellow */
-  --series-4: #008300; /* green */
-  --series-5: #4a3aa7; /* violet */
-  --series-6: #e34948; /* red */
-  --series-7: #e87ba4; /* magenta */
-  --series-8: #eb6834; /* orange */
+  /* Text */
+  --text-primary: #1a1a1a;
+  --text-secondary: #5a5a5a;
+  --text-muted: #8a8a8a;
 
-  --seq-100: #cde2fb;
-  --seq-250: #86b6ef;
-  --seq-400: #3987e5;
-  --seq-450: #2a78d6;
-  --seq-550: #1c5cab;
-  --seq-700: #0d366b;
+  /* Rules / borders */
+  --gridline: #e6e0d4;
+  --baseline: #c9bfa9;
+  --border: #e6e0d4;
 
-  --div-blue: #2a78d6;
-  --div-red: #e34948;
-  --div-mid: #f0efec;
+  /* Brand core */
+  --navy: #1a3a5c;
+  --navy-dark: #0f2540;
+  --navy-light: #2a5689;
+  --saffron: #d97e1f;
+  --saffron-light: #f4a85e;
 
-  --good: #0ca30c;
-  --warning: #fab219;
-  --serious: #ec835a;
-  --critical: #d03b3b;
-  --success-text: #006300;
+  /* Chart series — rotates through the SSP palette; series-1/2 double as the
+     Literacy/Numeracy accent colors (.pill.literacy / .pill.numeracy) */
+  --series-1: #3a5a8c;
+  --series-2: #d97e1f;
+  --series-3: #2d7a4a;
+  --series-4: #a83232;
+  --series-5: #2a5689;
+  --series-6: #b87614;
+  --series-7: #2c5d8a;
+  --series-8: #f4a85e;
 
-  --radius-card: 12px;
-  --radius-control: 8px;
-  --font-sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
-}
+  /* Status — same 4-band severity scale as the SSP skill-matrix heatmap */
+  --good: #2d7a4a;
+  --warning: #f5a623;
+  --serious: #ef6c5a;
+  --critical: #c62828;
+  --success-text: #2d7a4a;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --surface-1: #1a1a19;
-    --page-plane: #0d0d0d;
-    --text-primary: #ffffff;
-    --text-secondary: #c3c2b7;
-    --text-muted: #898781;
-    --gridline: #2c2c2a;
-    --baseline: #383835;
-    --border: rgba(255, 255, 255, 0.1);
+  --radius-card: 8px;
+  --radius-control: 6px;
 
-    --series-1: #3987e5;
-    --series-2: #199e70;
-    --series-3: #c98500;
-    --series-4: #008300;
-    --series-5: #9085e9;
-    --series-6: #e66767;
-    --series-7: #d55181;
-    --series-8: #d95926;
-
-    --div-mid: #383835;
-    --success-text: #0ca30c;
-  }
-}
-
-:root[data-theme='light'] {
-  color-scheme: light;
-}
-:root[data-theme='dark'] {
-  color-scheme: dark;
+  --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-hindi: 'Noto Sans Devanagari', sans-serif;
 }
 
 * {
@@ -82,6 +57,18 @@ body {
   background: var(--page-plane);
   color: var(--text-primary);
   font-family: var(--font-sans);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  letter-spacing: -0.01em;
+}
+
+.hindi {
+  font-family: var(--font-hindi);
 }
 
 #root {

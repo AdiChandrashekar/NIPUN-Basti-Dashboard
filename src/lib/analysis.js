@@ -225,4 +225,28 @@ export function gradeWiseBestWorst(competencyStats, monthKey) {
   return out
 }
 
+// Per-selected-competency breakdown at district/block/school granularity,
+// for the cross-dashboard compare view. `meta` should already be filtered to
+// just the competencies the user picked in the stepwise filter.
+export function computeScopeBreakdown(rows, meta, monthKey, level) {
+  const monthRows = rows.filter((r) => r.Month === monthKey)
+
+  function buildRow(label, groupRows) {
+    const perComp = meta.map((c) => ({ code: c.Code, label: c.Desc, avg: round(mean(groupRows.map((r) => r[c.Code]))) }))
+    const validAvgs = perComp.map((c) => c.avg).filter((v) => v !== null)
+    return { label, n: groupRows.length, perComp, overall: validAvgs.length ? round(mean(validAvgs)) : null }
+  }
+
+  if (level === 'district') return [buildRow('Basti (District)', monthRows)]
+
+  if (level === 'block') {
+    const blocks = [...new Set(monthRows.map((r) => r.Block))].sort()
+    return blocks
+      .map((b) => buildRow(b, monthRows.filter((r) => r.Block === b)))
+      .sort((a, b) => (b.overall ?? -1) - (a.overall ?? -1))
+  }
+
+  return monthRows.map((r) => buildRow(r.School, [r])).sort((a, b) => a.label.localeCompare(b.label))
+}
+
 export { mean, round }

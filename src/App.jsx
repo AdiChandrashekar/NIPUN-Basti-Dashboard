@@ -23,6 +23,7 @@ import BlockLeaderboard from './components/BlockLeaderboard'
 import GradeBreakdown from './components/GradeBreakdown'
 import SchoolsTable from './components/SchoolsTable'
 import CompareView from './components/CompareView'
+import CompareLanding from './components/compare/CompareLanding'
 
 const TABS = ['Overview', 'Competencies', 'Blocks', 'Schools', 'Compare']
 const EMPTY_FILTERS = { month: '', blocks: [], grades: [], subjects: [], competencies: [] }
@@ -31,6 +32,7 @@ export default function App() {
   const [state, setState] = useState({ status: 'loading' })
   const [tab, setTab] = useState('Overview')
   const [filters, setFilters] = useState(EMPTY_FILTERS)
+  const [view, setView] = useState('dashboard') // 'dashboard' | 'compare'
 
   useEffect(() => {
     let cancelled = false
@@ -141,82 +143,93 @@ export default function App() {
           <p>School-wise learning outcome tracking, {months[0]?.label}–{months[months.length - 1]?.label} 2026</p>
           <MonthBadges months={months} />
         </div>
-        <ThemeToggle />
+        <div className="header-actions">
+          <button type="button" className="chip" onClick={() => setView(view === 'dashboard' ? 'compare' : 'dashboard')}>
+            {view === 'dashboard' ? 'Compare with SSP dashboard' : '← Back to dashboard'}
+          </button>
+          <ThemeToggle />
+        </div>
       </header>
 
-      <CoverageBanner month={currentMonthInfo} />
-
-      <FilterBar
-        months={months}
-        blocks={allBlocks}
-        competencyMeta={base.meta}
-        filters={filters}
-        setFilters={setFilters}
-      />
-
-      <KpiCards
-        districtAvgByMonth={competencyStats.districtAvgByMonth}
-        selectedMonthKey={month}
-        monthInfo={filteredMonthInfo}
-        topBlock={topBlock}
-      />
-
-      <Tabs tabs={TABS} active={tab} onChange={setTab} />
-
-      {tab === 'Overview' && (
+      {view === 'compare' ? (
+        <CompareLanding base={base} />
+      ) : (
         <>
-          <section className="panel">
-            <h2>District average over time</h2>
-            <p className="panel-sub">Mean of the currently filtered competencies, by month</p>
-            <TrendChart data={competencyStats.districtAvgByMonth} />
-          </section>
-          <section className="panel">
-            <h2>Score band distribution</h2>
-            <p className="panel-sub">Average share of schools in each score band, across filtered competencies</p>
-            <DistributionChart byMonth={competencyStats.byMonth} months={months} />
-          </section>
-          <section className="panel">
-            <h2>Grade-wise best &amp; weakest competency</h2>
-            <p className="panel-sub">{currentMonthInfo?.label} — highest/lowest average within each grade &amp; subject group</p>
-            <GradeBreakdown groups={grades} />
-          </section>
+          <CoverageBanner month={currentMonthInfo} />
+
+          <FilterBar
+            months={months}
+            blocks={allBlocks}
+            competencyMeta={base.meta}
+            filters={filters}
+            setFilters={setFilters}
+          />
+
+          <KpiCards
+            districtAvgByMonth={competencyStats.districtAvgByMonth}
+            selectedMonthKey={month}
+            monthInfo={filteredMonthInfo}
+            topBlock={topBlock}
+          />
+
+          <Tabs tabs={TABS} active={tab} onChange={setTab} />
+
+          {tab === 'Overview' && (
+            <>
+              <section className="panel">
+                <h2>District average over time</h2>
+                <p className="panel-sub">Mean of the currently filtered competencies, by month</p>
+                <TrendChart data={competencyStats.districtAvgByMonth} />
+              </section>
+              <section className="panel">
+                <h2>Score band distribution</h2>
+                <p className="panel-sub">Average share of schools in each score band, across filtered competencies</p>
+                <DistributionChart byMonth={competencyStats.byMonth} months={months} />
+              </section>
+              <section className="panel">
+                <h2>Grade-wise best &amp; weakest competency</h2>
+                <p className="panel-sub">{currentMonthInfo?.label} — highest/lowest average within each grade &amp; subject group</p>
+                <GradeBreakdown groups={grades} />
+              </section>
+            </>
+          )}
+
+          {tab === 'Competencies' && (
+            <section className="panel">
+              <h2>Competencies — {currentMonthInfo?.label}</h2>
+              <p className="panel-sub">Sortable · change shown vs previous month · respects active filters</p>
+              <CompetencyTable perComp={competencyStats.byMonth[month].perComp} deltas={competencyStats.deltas[month]} />
+            </section>
+          )}
+
+          {tab === 'Blocks' && (
+            <section className="panel">
+              <h2>Block ranking — {currentMonthInfo?.label}</h2>
+              <p className="panel-sub">Overall average across filtered competencies, by block</p>
+              <BlockLeaderboard data={blockStats.byMonth[month]} />
+            </section>
+          )}
+
+          {tab === 'Schools' && (
+            <section className="panel">
+              <h2>All schools — {currentMonthInfo?.label}</h2>
+              <p className="panel-sub">Sortable, searchable · averages computed over the currently filtered competencies</p>
+              <SchoolsTable data={schoolTable.rows} prevMonthLabel={schoolTable.prevMonth?.label} compCount={filteredMeta.length} />
+            </section>
+          )}
+
+          {tab === 'Compare' && (
+            <CompareView
+              rows={filteredRows}
+              meta={filteredMeta}
+              blocks={blockStats.blocks}
+              competencyMeta={filteredMeta}
+              selectedMonth={month}
+              defaultBlocks={defaultBlocks}
+              defaultCompetencies={defaultCompetencies}
+            />
+          )}
         </>
-      )}
-
-      {tab === 'Competencies' && (
-        <section className="panel">
-          <h2>Competencies — {currentMonthInfo?.label}</h2>
-          <p className="panel-sub">Sortable · change shown vs previous month · respects active filters</p>
-          <CompetencyTable perComp={competencyStats.byMonth[month].perComp} deltas={competencyStats.deltas[month]} />
-        </section>
-      )}
-
-      {tab === 'Blocks' && (
-        <section className="panel">
-          <h2>Block ranking — {currentMonthInfo?.label}</h2>
-          <p className="panel-sub">Overall average across filtered competencies, by block</p>
-          <BlockLeaderboard data={blockStats.byMonth[month]} />
-        </section>
-      )}
-
-      {tab === 'Schools' && (
-        <section className="panel">
-          <h2>All schools — {currentMonthInfo?.label}</h2>
-          <p className="panel-sub">Sortable, searchable · averages computed over the currently filtered competencies</p>
-          <SchoolsTable data={schoolTable.rows} prevMonthLabel={schoolTable.prevMonth?.label} compCount={filteredMeta.length} />
-        </section>
-      )}
-
-      {tab === 'Compare' && (
-        <CompareView
-          rows={filteredRows}
-          meta={filteredMeta}
-          blocks={blockStats.blocks}
-          competencyMeta={filteredMeta}
-          selectedMonth={month}
-          defaultBlocks={defaultBlocks}
-          defaultCompetencies={defaultCompetencies}
-        />
       )}
 
       <p className="footer-note">

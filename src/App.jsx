@@ -1,36 +1,26 @@
 import { useEffect, useMemo, useState } from 'react'
 import { loadData } from './lib/csv'
 import { dataSources, isUsingGoogleSheets } from './config'
-import {
-  computeBlockStats,
-  computeCompetencyStats,
-  computeSchoolTable,
-  getMonthList,
-  gradeWiseBestWorst,
-  topBottomCompetencies,
-} from './lib/analysis'
+import { getMonthList } from './lib/analysis'
 
-import MonthBadges from './components/MonthBadges'
-import CoverageBanner from './components/CoverageBanner'
-import KpiCards from './components/KpiCards'
-import Tabs from './components/Tabs'
-import FilterBar from './components/FilterBar'
-import TrendChart from './components/TrendChart'
-import CompetencyTable from './components/CompetencyTable'
-import DistributionChart from './components/DistributionChart'
-import BlockLeaderboard from './components/BlockLeaderboard'
-import GradeBreakdown from './components/GradeBreakdown'
-import SchoolsTable from './components/SchoolsTable'
-import CompareView from './components/CompareView'
 import CompareLanding from './components/compare/CompareLanding'
+import OverviewPage from './pages/OverviewPage'
+import CompetenciesPage from './pages/CompetenciesPage'
+import BlocksPage from './pages/BlocksPage'
+import SchoolsPage from './pages/SchoolsPage'
+import ComparePage from './pages/ComparePage'
 
-const TABS = ['Overview', 'Competencies', 'Blocks', 'Schools', 'Compare']
-const EMPTY_FILTERS = { month: '', blocks: [], grades: [], subjects: [], competencies: [] }
+const PAGES = [
+  { key: 'Overview', component: OverviewPage },
+  { key: 'Competencies', component: CompetenciesPage },
+  { key: 'Blocks', component: BlocksPage },
+  { key: 'Schools', component: SchoolsPage },
+  { key: 'Compare', component: ComparePage },
+]
 
 export default function App() {
   const [state, setState] = useState({ status: 'loading' })
-  const [tab, setTab] = useState('Overview')
-  const [filters, setFilters] = useState(EMPTY_FILTERS)
+  const [page, setPage] = useState('Overview')
   const [view, setView] = useState('dashboard') // 'dashboard' | 'compare'
 
   useEffect(() => {
@@ -40,8 +30,6 @@ export default function App() {
         if (cancelled) return
         if (!rows.length) throw new Error('No rows found in data source.')
         setState({ status: 'ready', rows, meta })
-        const months = getMonthList(rows)
-        setFilters((f) => ({ ...f, month: months[months.length - 1]?.key ?? '' }))
       })
       .catch((err) => {
         if (cancelled) return
@@ -59,51 +47,6 @@ export default function App() {
     return { rows: state.rows, meta: state.meta, months, allBlocks }
   }, [state])
 
-  const filtered = useMemo(() => {
-    if (!base) return null
-    const { rows, meta, months, allBlocks } = base
-    const filteredRows = filters.blocks.length ? rows.filter((r) => filters.blocks.includes(r.Block)) : rows
-    const filteredMeta = meta.filter(
-      (c) =>
-        (filters.grades.length === 0 || filters.grades.includes(c.Grade)) &&
-        (filters.subjects.length === 0 || filters.subjects.includes(c.Subject)) &&
-        (filters.competencies.length === 0 || filters.competencies.includes(c.Code))
-    )
-    const competencyStats = computeCompetencyStats(filteredRows, filteredMeta)
-    const blockStats = computeBlockStats(filteredRows, filteredMeta)
-    const month = filters.month && competencyStats.byMonth[filters.month] ? filters.month : months[months.length - 1]?.key
-    if (!month) return null
-    const schoolTable = computeSchoolTable(filteredRows, filteredMeta, month)
-    const tb = topBottomCompetencies(competencyStats, month)
-    const grades = gradeWiseBestWorst(competencyStats, month)
-    const monthBlocks = blockStats.byMonth[month] || []
-    const topBlock = [...monthBlocks].filter((b) => b.overall !== null).sort((a, b) => b.overall - a.overall)[0]
-    const currentMonthInfo = months.find((m) => m.key === month)
-    const filteredMonthN = filteredRows.filter((r) => r.Month === month).length
-    const filteredBlockCount = monthBlocks.filter((b) => b.n > 0).length
-    const filteredMonthInfo = currentMonthInfo && {
-      ...currentMonthInfo,
-      n: filteredMonthN,
-      blockCount: filteredBlockCount,
-    }
-    return {
-      filteredRows,
-      filteredMeta,
-      allBlocks,
-      filteredMonthInfo,
-      months,
-      month,
-      currentMonthInfo,
-      competencyStats,
-      blockStats,
-      schoolTable,
-      tb,
-      grades,
-      monthBlocks,
-      topBlock,
-    }
-  }, [base, filters])
-
   if (state.status === 'loading') {
     return <div className="loading">Loading NIPUN Basti data…</div>
   }
@@ -118,122 +61,47 @@ export default function App() {
       </div>
     )
   }
-  if (!filtered) {
-    return <div className="loading">Preparing dashboard…</div>
-  }
-
-  const {
-    filteredRows, filteredMeta, allBlocks, months, month, currentMonthInfo, filteredMonthInfo,
-    competencyStats, blockStats, schoolTable, tb, grades, topBlock,
-  } = filtered
-
-  const defaultBlocks = [...blockStats.byMonth[month]]
-    .filter((b) => b.overall !== null)
-    .sort((a, b) => b.overall - a.overall)
-    .slice(0, 3)
-    .map((b) => b.block)
-  const defaultCompetencies = tb.bottom.slice(0, 5).map((c) => c.code)
 
   return (
     <div className="app">
-      <header className="app-header">
-        <div className="app-title">
-          <h1>NIPUN Basti — Competency Dashboard</h1>
-          <p>School-wise learning outcome tracking, {months[0]?.label}–{months[months.length - 1]?.label} 2026</p>
-          <MonthBadges months={months} />
-        </div>
-        <div className="header-actions">
+      <header className="topbar">
+        <div className="topbar-inner">
+          <div className="brand">NIPUN Basti — Competency Dashboard</div>
+          <nav className="view-toggle">
+            {PAGES.map((p) => (
+              <button
+                key={p.key}
+                type="button"
+                className={view === 'dashboard' && page === p.key ? 'active' : ''}
+                onClick={() => {
+                  setView('dashboard')
+                  setPage(p.key)
+                }}
+              >
+                {p.key}
+              </button>
+            ))}
+          </nav>
           <button type="button" className="chip" onClick={() => setView(view === 'dashboard' ? 'compare' : 'dashboard')}>
             {view === 'dashboard' ? 'Compare with SSP dashboard' : '← Back to dashboard'}
           </button>
         </div>
       </header>
 
-      {view === 'compare' ? (
-        <CompareLanding base={base} />
-      ) : (
-        <>
-          <CoverageBanner month={currentMonthInfo} />
+      <div className="container">
+        {view === 'compare' && <CompareLanding base={base} />}
 
-          <FilterBar
-            months={months}
-            blocks={allBlocks}
-            competencyMeta={base.meta}
-            filters={filters}
-            setFilters={setFilters}
-          />
+        {PAGES.map((p) => (
+          <div key={p.key} className={`page${view === 'dashboard' && page === p.key ? ' active' : ''}`}>
+            <p.component base={base} />
+          </div>
+        ))}
 
-          <KpiCards
-            districtAvgByMonth={competencyStats.districtAvgByMonth}
-            selectedMonthKey={month}
-            monthInfo={filteredMonthInfo}
-            topBlock={topBlock}
-          />
-
-          <Tabs tabs={TABS} active={tab} onChange={setTab} />
-
-          {tab === 'Overview' && (
-            <>
-              <section className="panel">
-                <h2>District average over time</h2>
-                <p className="panel-sub">Mean of the currently filtered competencies, by month</p>
-                <TrendChart data={competencyStats.districtAvgByMonth} />
-              </section>
-              <section className="panel">
-                <h2>Score band distribution</h2>
-                <p className="panel-sub">Average share of schools in each score band, across filtered competencies</p>
-                <DistributionChart byMonth={competencyStats.byMonth} months={months} />
-              </section>
-              <section className="panel">
-                <h2>Grade-wise best &amp; weakest competency</h2>
-                <p className="panel-sub">{currentMonthInfo?.label} — highest/lowest average within each grade &amp; subject group</p>
-                <GradeBreakdown groups={grades} />
-              </section>
-            </>
-          )}
-
-          {tab === 'Competencies' && (
-            <section className="panel">
-              <h2>Competencies — {currentMonthInfo?.label}</h2>
-              <p className="panel-sub">Sortable · change shown vs previous month · respects active filters</p>
-              <CompetencyTable perComp={competencyStats.byMonth[month].perComp} deltas={competencyStats.deltas[month]} />
-            </section>
-          )}
-
-          {tab === 'Blocks' && (
-            <section className="panel">
-              <h2>Block ranking — {currentMonthInfo?.label}</h2>
-              <p className="panel-sub">Overall average across filtered competencies, by block</p>
-              <BlockLeaderboard data={blockStats.byMonth[month]} />
-            </section>
-          )}
-
-          {tab === 'Schools' && (
-            <section className="panel">
-              <h2>All schools — {currentMonthInfo?.label}</h2>
-              <p className="panel-sub">Sortable, searchable · averages computed over the currently filtered competencies</p>
-              <SchoolsTable data={schoolTable.rows} prevMonthLabel={schoolTable.prevMonth?.label} compCount={filteredMeta.length} />
-            </section>
-          )}
-
-          {tab === 'Compare' && (
-            <CompareView
-              rows={filteredRows}
-              meta={filteredMeta}
-              blocks={blockStats.blocks}
-              competencyMeta={filteredMeta}
-              selectedMonth={month}
-              defaultBlocks={defaultBlocks}
-              defaultCompetencies={defaultCompetencies}
-            />
-          )}
-        </>
-      )}
-
-      <p className="footer-note">
-        {isUsingGoogleSheets ? 'Live data from Google Sheets.' : 'Using bundled CSV snapshot — connect a Google Sheet in src/config.js for live updates.'}
-        {' '}Add a new month by appending rows to Raw_Scores — see SETUP.md.
-      </p>
+        <p className="footer-note">
+          {isUsingGoogleSheets ? 'Live data from Google Sheets.' : 'Using bundled CSV snapshot — connect a Google Sheet in src/config.js for live updates.'}
+          {' '}Add a new month by appending rows to Raw_Scores — see SETUP.md.
+        </p>
+      </div>
     </div>
   )
 }

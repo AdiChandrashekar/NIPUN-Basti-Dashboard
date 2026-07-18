@@ -1,66 +1,98 @@
 .app {
+  min-height: 100vh;
+}
+
+.container {
   max-width: 1180px;
   margin: 0 auto;
   padding: 24px 20px 64px;
 }
 
-.app-header {
+/* Sticky navy topbar, mirroring the SSP dashboard's own header */
+.topbar {
+  background: var(--navy);
+  color: white;
+  padding: 0.6rem 0;
+  border-bottom: 3px solid var(--saffron);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.topbar-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 20px;
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: 16px;
-  margin-bottom: 24px;
   flex-wrap: wrap;
 }
 
-.app-title h1 {
-  font-size: 22px;
-  margin: 0 0 4px;
+.brand {
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
-.app-title p {
+.view-toggle {
+  display: flex;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 3px;
+  gap: 2px;
+  flex-wrap: wrap;
+}
+
+.view-toggle button {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 0.4rem 0.9rem;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 500;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.02em;
+}
+
+.view-toggle button:hover {
+  color: white;
+}
+
+.view-toggle button.active {
+  background: white;
+  color: var(--navy);
+}
+
+.page {
+  display: none;
+}
+
+.page.active {
+  display: block;
+}
+
+.page-header {
+  padding: 1.5rem 0 1rem;
+  border-bottom: 1px solid var(--gridline);
+  margin-bottom: 20px;
+}
+
+.page-header h1 {
+  font-size: 1.6rem;
+  margin: 0 0 4px;
+  color: var(--navy-dark);
+}
+
+.page-header .page-sub {
   margin: 0;
   color: var(--text-secondary);
   font-size: 14px;
-}
-
-.month-badges {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 8px;
-}
-
-.month-badge {
-  font-size: 12px;
-  padding: 3px 9px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  color: var(--text-secondary);
-  background: var(--surface-1);
-}
-
-.month-badge.low-coverage {
-  color: var(--warning);
-  border-color: var(--warning);
-}
-
-.banner {
-  display: flex;
-  gap: 10px;
-  align-items: flex-start;
-  background: var(--surface-1);
-  border: 1px solid var(--warning);
-  border-left: 4px solid var(--warning);
-  border-radius: var(--radius-card);
-  padding: 12px 16px;
-  margin-bottom: 24px;
-  font-size: 13.5px;
-  color: var(--text-secondary);
-}
-
-.banner strong {
-  color: var(--text-primary);
 }
 
 section.panel {
@@ -119,31 +151,6 @@ section.panel .panel-sub {
 }
 .kpi-delta.down {
   color: var(--critical);
-}
-
-.tabs {
-  display: flex;
-  gap: 4px;
-  border-bottom: 1px solid var(--gridline);
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-
-.tab-btn {
-  border: none;
-  background: none;
-  color: var(--text-secondary);
-  font-size: 13.5px;
-  padding: 8px 14px;
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-}
-
-.tab-btn.active {
-  color: var(--series-1);
-  border-bottom-color: var(--series-1);
-  font-weight: 600;
 }
 
 table.data-table {
@@ -483,12 +490,6 @@ table.data-table tbody tr:hover {
   padding: 40px 20px;
   text-align: center;
   color: var(--text-secondary);
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
 }
 
 .compare-grid-2col {

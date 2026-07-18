@@ -27,17 +27,19 @@ export default function FilterBar({
   return (
     <div className="filter-bar">
       <div className="filter-group">
-        <label className="filter-label" htmlFor="month-select">
-          Month
-        </label>
-        <select id="month-select" className="month-select" value={month} onChange={(e) => update({ month: e.target.value })}>
+        <span className="filter-label">Month</span>
+        <div className="chip-row">
           {months.map((m) => (
-            <option key={m.key} value={m.key}>
+            <button
+              key={m.key}
+              type="button"
+              className={`chip${month === m.key ? ' active' : ''}`}
+              onClick={() => update({ month: m.key })}
+            >
               {m.label}
-              {m.isLowCoverage ? ' (partial)' : ''}
-            </option>
+            </button>
           ))}
-        </select>
+        </div>
       </div>
 
       <MultiSelect

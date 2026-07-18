@@ -231,22 +231,27 @@ export function gradeWiseBestWorst(competencyStats, monthKey) {
 export function computeScopeBreakdown(rows, meta, monthKey, level) {
   const monthRows = rows.filter((r) => r.Month === monthKey)
 
-  function buildRow(label, groupRows) {
+  function buildRow(key, label, groupRows) {
     const perComp = meta.map((c) => ({ code: c.Code, label: c.Desc, avg: round(mean(groupRows.map((r) => r[c.Code]))) }))
     const validAvgs = perComp.map((c) => c.avg).filter((v) => v !== null)
-    return { label, n: groupRows.length, perComp, overall: validAvgs.length ? round(mean(validAvgs)) : null }
+    return { key, label, n: groupRows.length, perComp, overall: validAvgs.length ? round(mean(validAvgs)) : null }
   }
 
-  if (level === 'district') return [buildRow('Basti (District)', monthRows)]
+  if (level === 'district') return [buildRow('district', 'Basti (District)', monthRows)]
 
   if (level === 'block') {
     const blocks = [...new Set(monthRows.map((r) => r.Block))].sort()
     return blocks
-      .map((b) => buildRow(b, monthRows.filter((r) => r.Block === b)))
+      .map((b) => buildRow(`block:${b}`, b, monthRows.filter((r) => r.Block === b)))
       .sort((a, b) => (b.overall ?? -1) - (a.overall ?? -1))
   }
 
-  return monthRows.map((r) => buildRow(r.School, [r])).sort((a, b) => a.label.localeCompare(b.label))
+  // Keyed by SchoolCode (not the display name) — different schools can
+  // legitimately share the same School name, which would otherwise collide
+  // as a React key.
+  return monthRows
+    .map((r) => buildRow(`school:${r.SchoolCode}`, r.School, [r]))
+    .sort((a, b) => a.label.localeCompare(b.label))
 }
 
 export { mean, round }

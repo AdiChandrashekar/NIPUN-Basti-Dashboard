@@ -92,8 +92,8 @@ export default function NipunPanel({ base }) {
                 </tr>
               </thead>
               <tbody>
-                {table.map((row) => (
-                  <tr key={row.label}>
+                {table.map((row, i) => (
+                  <tr key={`${row.key}-${i}`}>
                     <td>{row.label}</td>
                     <td className="num">{fmtInt(row.n)}</td>
                     {row.perComp.map((c) => (

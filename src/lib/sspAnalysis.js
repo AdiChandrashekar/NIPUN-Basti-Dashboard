@@ -38,6 +38,7 @@ function buildDistrictRow(schools, competencies) {
     avg: round(weightedMean(schools.map((s) => ({ value: s[c.code], weight: s.totalStudents || 0 })))),
   }))
   return {
+    key: 'district',
     label: 'Basti (District)',
     n: totalStudents,
     perComp,
@@ -48,14 +49,23 @@ function buildDistrictRow(schools, competencies) {
 function buildBlockRows(blocks, competencies) {
   return blocks
     .filter((b) => b.totalStudents > 0)
-    .map((b) => ({ label: b.block, n: b.totalStudents, perComp: perCompFor(b, competencies), nipunPct: nipunPctFor(b) }))
+    .map((b) => ({
+      key: `block:${b.block}`,
+      label: b.block,
+      n: b.totalStudents,
+      perComp: perCompFor(b, competencies),
+      nipunPct: nipunPctFor(b),
+    }))
     .sort((a, b) => (b.nipunPct ?? -1) - (a.nipunPct ?? -1))
 }
 
+// Keyed by UDISE (not schoolName) — different schools can legitimately share
+// the same display name, which would otherwise collide as a React key.
 function buildSchoolRows(schools, competencies) {
   return schools
     .filter((s) => s.totalStudents > 0)
     .map((s) => ({
+      key: `school:${s.udise}`,
       label: s.schoolName || s.udise,
       n: s.totalStudents,
       perComp: perCompFor(s, competencies),

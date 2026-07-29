@@ -57,7 +57,7 @@ export default function SspPanel() {
 
   return (
     <div className="compare-panel">
-      <h3>SSP Dashboard</h3>
+      <h3>Partner Org Dashboard</h3>
       <p className="panel-sub">Source: live Apps Script backend (student-level NIPUN proficiency)</p>
 
       <div className="filter-bar">
@@ -97,11 +97,11 @@ export default function SspPanel() {
         gradeLabel={(g) => `Grade ${g}`}
       />
 
-      {status === 'loading' && <p className="compare-empty">Loading from the SSP backend…</p>}
+      {status === 'loading' && <p className="compare-empty">Loading from the Partner Org backend…</p>}
 
       {status === 'error' && (
         <p className="compare-empty" style={{ color: 'var(--critical)' }}>
-          Couldn't reach the SSP backend: {error}
+          Couldn't reach the Partner Org backend: {error}
         </p>
       )}
 

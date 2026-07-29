@@ -3,7 +3,11 @@
 // the SSP dashboard's own index.html uses a JSONP <script> tag instead of
 // fetch — this mirrors that same technique.
 const SSP_ENDPOINT =
-  'https://script.google.com/macros/s/AKfycbx5eXWC1F5iFOwesSpYJdt_cpTQS0GHTxH4-fGRnTWYDKo02o5HL3QlJHdrTXJgADs7/exec'
+  'https://script.google.com/macros/s/AKfycbx2F7cZoCBqxtYc-yIrBUqLRhyJ-z-xXUWgZ1vjIaJb-Qkxxk0rq4JXIVWPtg_cvf8R/exec'
+
+// The backend now serves three programs (ssp | rmeal | combined). NIPUN+
+// always compares against the combined dataset.
+const PROGRAM = 'combined'
 
 let jsonpCounter = 0
 const cache = new Map()
@@ -42,12 +46,12 @@ function fetchJsonp(params) {
   })
 }
 
-// dataset: 'schools' | 'blocks'. params: { quarter, grade }.
+// dataset: 'schools' | 'blocks' | 'students'. params: { quarter, grade }.
 export async function fetchSsp(dataset, params = {}) {
-  const key = JSON.stringify({ dataset, ...params })
+  const key = JSON.stringify({ dataset, program: PROGRAM, ...params })
   if (cache.has(key)) return cache.get(key)
 
-  const promise = fetchJsonp({ dataset, ...params })
+  const promise = fetchJsonp({ dataset, program: PROGRAM, ...params })
     .then((resp) => {
       if (!resp || !resp.ok) throw new Error(resp?.error || 'SSP API returned an error')
       return resp.data || []

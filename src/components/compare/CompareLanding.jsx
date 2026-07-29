@@ -1,5 +1,6 @@
 import NipunPanel from './NipunPanel'
 import SspPanel from './SspPanel'
+import GraphBuilder from './graph/GraphBuilder'
 
 export default function CompareLanding({ base }) {
   return (
@@ -13,6 +14,8 @@ export default function CompareLanding({ base }) {
         <NipunPanel base={base} />
         <SspPanel />
       </div>
+
+      <GraphBuilder base={base} />
     </section>
   )
 }

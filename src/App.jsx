@@ -83,7 +83,7 @@ export default function App() {
             ))}
           </nav>
           <button type="button" className="chip" onClick={() => setView(view === 'dashboard' ? 'compare' : 'dashboard')}>
-            {view === 'dashboard' ? 'Compare with SSP dashboard' : '← Back to dashboard'}
+            {view === 'dashboard' ? 'Compare with Partner Org Dash' : '← Back to dashboard'}
           </button>
         </div>
       </header>

@@ -3,9 +3,9 @@
 // best/weakest) but computed dynamically for however many months are present in
 // the data. Adding a new month to Raw_Scores requires no changes here.
 
+import { computeBands } from './bands'
+
 const LOW_COVERAGE_RATIO = 0.3 // a month with < 30% of the max month's N is flagged "preliminary"
-const BAND_LOW = 50
-const BAND_HIGH = 75
 
 function mean(values) {
   const v = values.filter((x) => typeof x === 'number' && !Number.isNaN(x))
@@ -43,24 +43,20 @@ export function computeCompetencyStats(rows, meta) {
     const perComp = meta.map((c) => {
       const values = monthRows.map((r) => r[c.Code]).filter((v) => typeof v === 'number' && !Number.isNaN(v))
       const avg = mean(values)
-      const zeroCount = values.filter((v) => v === 0).length
-      const lowCount = values.filter((v) => v > 0 && v < BAND_LOW).length
-      const midCount = values.filter((v) => v >= BAND_LOW && v <= BAND_HIGH).length
-      const highCount = values.filter((v) => v > BAND_HIGH).length
-      const total = values.length || 1
+      const bands = computeBands(values)
       return {
         code: c.Code,
         desc: c.Desc,
         grade: c.Grade,
         subject: c.Subject,
         avg,
-        n: values.length,
-        zeroCount,
-        zeroPct: zeroCount / total,
-        bandZero: zeroCount / total,
-        bandLow: lowCount / total,
-        bandMid: midCount / total,
-        bandHigh: highCount / total,
+        n: bands.n,
+        zeroCount: bands.zeroCount,
+        zeroPct: bands.bandZero,
+        bandZero: bands.bandZero,
+        bandLow: bands.bandLow,
+        bandMid: bands.bandMid,
+        bandHigh: bands.bandHigh,
       }
     })
     byMonth[m.key] = { n, perComp }

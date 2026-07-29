@@ -666,3 +666,15 @@ table.data-table tbody tr:hover {
   align-self: center;
   margin-left: auto;
 }
+
+.graph-chart-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.graph-totals {
+  align-self: flex-end;
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}

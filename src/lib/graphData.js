@@ -29,16 +29,29 @@ async function fetchPartnerSchoolsByGrade(quarter, grades) {
 }
 
 // refs: [{ id, source: 'nipun' | 'partner', code, label, grade, subject }]
-// Returns the same refs with { n, zeroCount, bandZero, bandLow, bandMid, bandHigh } merged in.
+// Returns { entries, partnerTotalStudents, nipunTotalSchools }.
+// entries: the same refs with { n, zeroCount, bandZero, bandLow, bandMid, bandHigh } merged in.
+// partnerTotalStudents: sum of totalStudents across every grade's school dataset actually
+// fetched for this selection (each grade's totalStudents is already grade-scoped server-side,
+// so summing across distinct grades is additive, not double-counting).
+// nipunTotalSchools: schools assessed in nipunMonth (adaptive to the month filter only —
+// the CSV has no grade-scoped rows to filter by, unlike the Partner Org side).
 export async function resolveGraphEntries({ refs, base, nipunMonth, partnerQuarter }) {
   const partnerGrades = [...new Set(refs.filter((r) => r.source === 'partner').map((r) => r.grade))]
   const partnerSchoolsByGrade = await fetchPartnerSchoolsByGrade(partnerQuarter, partnerGrades)
 
-  return refs.map((ref) => {
+  const entries = refs.map((ref) => {
     const bands =
       ref.source === 'nipun'
         ? computeNipunBands(base.rows, nipunMonth, ref.code)
         : computePartnerBands(partnerSchoolsByGrade[ref.grade], ref.code)
     return { ...ref, ...bands }
   })
+
+  const partnerTotalStudents = Object.values(partnerSchoolsByGrade)
+    .flat()
+    .reduce((sum, s) => sum + (s.totalStudents || 0), 0)
+  const nipunTotalSchools = base.rows.filter((r) => r.Month === nipunMonth).length
+
+  return { entries, partnerTotalStudents, nipunTotalSchools }
 }

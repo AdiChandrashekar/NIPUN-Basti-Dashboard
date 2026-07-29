@@ -69,6 +69,7 @@ export default function GraphBuilder({ base }) {
   const [draftSingle, setDraftSingle] = useState('')
 
   const [resolved, setResolved] = useState([])
+  const [totals, setTotals] = useState({ nipunTotalSchools: 0, partnerTotalStudents: 0 })
   const [status, setStatus] = useState('idle') // idle | loading | ready | error
   const [error, setError] = useState(null)
 
@@ -129,9 +130,10 @@ export default function GraphBuilder({ base }) {
       : selections.map((s) => ({ id: s.id, source: s.source, ...s.ref }))
 
     resolveGraphEntries({ refs, base, nipunMonth, partnerQuarter })
-      .then((entries) => {
+      .then(({ entries, partnerTotalStudents, nipunTotalSchools }) => {
         if (cancelled) return
         setResolved(entries)
+        setTotals({ nipunTotalSchools, partnerTotalStudents })
         setStatus('ready')
       })
       .catch((err) => {
@@ -158,10 +160,30 @@ export default function GraphBuilder({ base }) {
     return selections.map((s) => resolved.find((r) => r.id === s.id)).filter(Boolean)
   }, [status, resolved, selections, paired])
 
+  const totalsText =
+    status === 'ready' && chartRows.length
+      ? `NIPUN+: ${totals.nipunTotalSchools.toLocaleString()} schools assessed · Partner Org: ${totals.partnerTotalStudents.toLocaleString()} students assessed`
+      : ''
+
+  const legendItems =
+    viewMode === 'achievement'
+      ? [
+          { label: 'NIPUN+', color: '#1a3a5c' },
+          { label: 'Partner Org', color: '#d97e1f' },
+        ]
+      : [
+          { label: '0% (Zero)', color: '#c62828' },
+          { label: '1–49%', color: '#ef6c5a' },
+          { label: '50–75%', color: '#f5a623' },
+          { label: '>75%', color: '#2d7a4a' },
+          { label: 'NIPUN+ outline', color: '#1a3a5c' },
+          { label: 'Partner Org outline', color: '#d97e1f' },
+        ]
+
   async function handleExportPng() {
     if (!chartRef.current) return
     try {
-      await exportSvgAsPng(chartRef.current, `nipun-partner-compare-${viewMode}-${Date.now()}.png`)
+      await exportSvgAsPng(chartRef.current, `nipun-partner-compare-${viewMode}-${Date.now()}.png`, { legendItems, footerText: totalsText })
     } catch (err) {
       setError(err.message)
     }
@@ -344,7 +366,9 @@ export default function GraphBuilder({ base }) {
           Couldn't build the graph: {error}
         </p>
       )}
-      {(status === 'ready' || status === 'idle') && <GraphChart ref={chartRef} mode={paired ? 'paired' : 'unpaired'} viewMode={viewMode} rows={chartRows} />}
+      {(status === 'ready' || status === 'idle') && (
+        <GraphChart ref={chartRef} mode={paired ? 'paired' : 'unpaired'} viewMode={viewMode} rows={chartRows} totalsText={totalsText} />
+      )}
     </div>
   )
 }

@@ -12,6 +12,11 @@ Reads the month files listed in MONTHS below and writes:
   - Raw_Scores.csv
   - Competency_Meta.csv
   - Basti_Sheets_Import.xlsx  (both tables as tabs, ready for Google Sheets import)
+
+NOTE: this script only handles the April/May/June source shape (single sheet,
+columns already holding computed percentages). Starting July 2026 the raw exports
+switched to a per-grade-sheet, raw-fraction format instead -- use
+add_month_gradesheets.py for those months.
 """
 import pandas as pd
 from openpyxl import Workbook

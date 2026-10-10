@@ -83,20 +83,26 @@ export default function About({ data }) {
 
         <h3>Compare with Partner Org</h3>
         <dl>
-          <dt>Partner Org result</dt>
+          <dt>The measure</dt>
           <dd>
-            From the Partner Org dashboard's live backend (combined view): each child's score on a competency as a % of its marks, averaged over children (weighted by
-            children assessed in each school).
+            Both sides are put on one measure for a subject: the share of child × skill checks that were achieved. NIPUN+: children achieved ÷ children assessed, added
+            up over the subject's learning outcomes for the grade (before July 2026, the average of the school's LO percentages). Partner Org: each child's share of
+            the subject's competencies passed (75%+ of the marks), averaged over the school's children, from the Partner Org dashboard's live backend.
           </dd>
-          <dt>Skill pairs</dt>
+          <dt>Same grade, same period, same schools</dt>
           <dd>
-            The comparison matches NIPUN+ LOs to the Partner Org competency that tests the same skill (for example H106.1 Word Reading with Word reading). The suggested
-            pairs can be edited on the page. The NIPUN+ side uses every month of the chosen quarter that has data, or the one month picked.
+            A Partner Org quarter is compared with the NIPUN+ months in that quarter, for one grade. Every figure that compares the two uses only schools with results
+            in both (same UDISE code), and by default only those with 5+ NIPUN+ checks and 5+ Partner Org children.
           </dd>
+          <dt>Bands and agreement</dt>
+          <dd>Each school is placed in a band (below 50%, 50–74%, 75%+) by each source. "Same band" means the two agree; otherwise one source is higher.</dd>
           <dt>Gap</dt>
-          <dd>Partner Org result minus NIPUN+ result, in percentage points.</dd>
-          <dt>Schools in both</dt>
-          <dd>Schools with the same UDISE code in both sources. Blocks are matched by name, allowing for the spelling differences between the sources.</dd>
+          <dd>NIPUN+ minus Partner Org, in percentage points. Positive means NIPUN+ is higher.</dd>
+          <dt>Why not skill by skill</dt>
+          <dd>
+            Most NIPUN+ learning outcomes are unnamed in the exports and are often assessed in a different grade from the Partner Org competency for the same skill, so
+            whole subjects are compared instead.
+          </dd>
         </dl>
       </div>
     </>

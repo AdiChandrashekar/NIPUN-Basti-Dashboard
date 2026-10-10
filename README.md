@@ -15,9 +15,10 @@ Live: https://adichandrashekar.github.io/NIPUN-Basti-Dashboard/
   spread of school results, blocks) and a sortable table.
 - **Blocks**: ranking, block × month heatmap, table.
 - **Schools**: every school, searchable; click one for its LO × month results.
-- **Compare with Partner Org**: NIPUN+ against the Partner Org assessment, skill by
-  skill (dot plot), spread of school results, schools assessed by both (scatter)
-  and block by block. Skill pairs are editable.
+- **Compare with Partner Org**: does NIPUN+ agree with the Partner Org's own
+  assessment? Same grade, same quarter, same schools, one measure per subject:
+  headline gap, a band agreement matrix, a school scatter, blocks, and a list of
+  schools where the two disagree most.
 - **Definitions**: how every number is calculated.
 
 Filters (month, block, grade, subject, learning outcome, area) apply to every page
@@ -51,6 +52,7 @@ exporter/            Apps Script: Drive folder -> data/raw (runs as a CSF accoun
 data/raw/            raw NIPUN+ exports, one folder per month (written by the exporter)
 data-prep/           build_data.py -> public/data/basti.json; LO names in lo_descriptions.csv
 src/lib/data.js      every metric on the dashboard
-src/lib/partner.js   Partner Org backend, skill pairs, block-name matching
+src/lib/partner.js   Partner Org backend and block-name matching
+src/lib/compare.js   NIPUN+ vs Partner Org matching and aggregation
 src/pages/           one file per page
 ```

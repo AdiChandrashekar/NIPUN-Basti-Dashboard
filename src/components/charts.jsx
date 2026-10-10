@@ -15,16 +15,19 @@ export function seqColor(t) {
 // Categorical slots from the reference palette, in fixed order (never cycled).
 export const SERIES = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100']
 // The two sources on the comparison page always wear the same slot and marker shape.
+// ink = a darker step of the same hue, for text that names the source.
 export const SOURCE = {
-  nipun: { label: 'NIPUN+', color: SERIES[0], shape: 'circle' },
-  partner: { label: 'Partner Org', color: SERIES[1], shape: 'diamond' },
+  nipun: { key: 'nipun', label: 'NIPUN+', color: SERIES[0], ink: '#184f95', shape: 'circle' },
+  partner: { key: 'partner', label: 'Partner Org', color: SERIES[1], ink: '#8c3a17', shape: 'diamond' },
 }
 
-function useWidth() {
+export function useWidth() {
   const ref = useRef(null)
   const [w, setW] = useState(600)
   useLayoutEffect(() => {
     if (!ref.current) return
+    // Measure now so the first paint already fits; the observer handles later resizes.
+    setW(Math.max(240, ref.current.getBoundingClientRect().width))
     const ro = new ResizeObserver(([e]) => setW(Math.max(240, e.contentRect.width)))
     ro.observe(ref.current)
     return () => ro.disconnect()
@@ -40,7 +43,7 @@ function niceMax(v) {
   return step * p
 }
 
-function Tooltip({ tip }) {
+export function Tooltip({ tip }) {
   if (!tip) return null
   return (
     <div className="tooltip" style={{ left: tip.x, top: tip.y }} role="status">
@@ -485,157 +488,5 @@ export function LevelBar({ s, levels, wide = false }) {
     <span className={`levelbar${wide ? ' levelbar-wide' : ''}`} title={levels.map((l) => `${l.label}: ${s[l.key] ?? 0}`).join(' · ') + ` of ${s.n}`}>
       {levels.map((l) => (s[l.key] ? <span key={l.key} style={{ width: `${(s[l.key] / s.n) * 100}%`, background: l.color }} /> : null))}
     </span>
-  )
-}
-
-/**
- * Dumbbell (dot) plot comparing two sources per row, on one 0-100% scale.
- * rows: [{ key, label, sub?, a: number|null, b: number|null, tipA?, tipB? }]
- * a = NIPUN+, b = Partner Org. Rows are direct-labelled with both values and the gap.
- */
-export function Dumbbell({ rows, a = SOURCE.nipun, b = SOURCE.partner, label = 'Dot plot', onSelect, selectedKey }) {
-  const [ref, width] = useWidth()
-  const [tip, setTip] = useState(null)
-  const labelW = Math.min(240, Math.max(130, width * 0.3))
-  const gapW = 74
-  const pad = { l: labelW, r: gapW + 8, t: 26, b: 8 }
-  const rowH = 34
-  const height = pad.t + rows.length * rowH + pad.b
-  const plotW = width - pad.l - pad.r
-  const x = (v) => pad.l + (v / 100) * plotW
-
-  return (
-    <div className="chart" ref={ref} onMouseLeave={() => setTip(null)}>
-      <div className="legend">
-        <span className="legend-item">
-          <LegendSwatch color={a.color} shape={a.shape} /> {a.label}
-        </span>
-        <span className="legend-item">
-          <LegendSwatch color={b.color} shape={b.shape} /> {b.label}
-        </span>
-        <span className="legend-item muted">Gap = {b.label} − {a.label}</span>
-      </div>
-      <svg width={width} height={height} role="img" aria-label={label}>
-        {[0, 25, 50, 75, 100].map((t) => (
-          <g key={t}>
-            <line x1={x(t)} x2={x(t)} y1={pad.t - 4} y2={height - pad.b} className={t === 0 ? 'axis' : 'grid'} />
-            <text x={x(t)} y={pad.t - 10} className="tick" textAnchor="middle">
-              {t}%
-            </text>
-          </g>
-        ))}
-        <text x={width - 4} y={pad.t - 10} className="tick" textAnchor="end">
-          Gap
-        </text>
-        {rows.map((r, i) => {
-          const cy = pad.t + i * rowH + rowH / 2
-          const gap = r.a != null && r.b != null ? r.b - r.a : null
-          const sel = selectedKey === r.key
-          return (
-            <g
-              key={r.key}
-              className={onSelect ? 'db-row clickable' : 'db-row'}
-              onClick={onSelect ? () => onSelect(r.key) : undefined}
-              tabIndex={onSelect ? 0 : undefined}
-              role={onSelect ? 'button' : undefined}
-              aria-label={`${r.label}: ${a.label} ${r.a == null ? 'no data' : Math.round(r.a) + '%'}, ${b.label} ${r.b == null ? 'no data' : Math.round(r.b) + '%'}`}
-              onKeyDown={onSelect ? (e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), onSelect(r.key)) : undefined}
-            >
-              <rect x={0} y={cy - rowH / 2} width={width} height={rowH} className={`db-hit${sel ? ' selected' : ''}`} />
-              <text x={8} y={r.sub ? cy - 6 : cy} className="db-label" dominantBaseline="middle">
-                {r.label.length > 34 ? r.label.slice(0, 33) + '…' : r.label}
-              </text>
-              {r.sub && (
-                <text x={8} y={cy + 8} className="db-sub" dominantBaseline="middle">
-                  {r.sub}
-                </text>
-              )}
-              {r.a != null && r.b != null && <line x1={x(r.a)} x2={x(r.b)} y1={cy} y2={cy} className="db-link" />}
-              {[
-                [r.a, a, r.tipA],
-                [r.b, b, r.tipB],
-              ].map(([v, src, t], k) =>
-                v == null ? null : (
-                  <g
-                    key={k}
-                    onMouseMove={(e) => {
-                      const box = ref.current.getBoundingClientRect()
-                      setTip({ x: Math.min(e.clientX - box.left + 12, width - 240), y: e.clientY - box.top - 10, content: t || `${src.label}: ${Math.round(v)}%` })
-                    }}
-                  >
-                    <circle cx={x(v)} cy={cy} r={11} fill="transparent" />
-                    <Marker shape={src.shape} x={x(v)} y={cy} r={6} color={src.color} />
-                  </g>
-                ),
-              )}
-              <text x={width - 4} y={cy} className={`db-gap ${gap == null ? '' : gap > 0 ? 'gap-pos' : gap < 0 ? 'gap-neg' : ''}`} textAnchor="end" dominantBaseline="middle">
-                {gap == null ? 'no match' : `${gap > 0 ? '+' : gap < 0 ? '−' : '±'}${Math.abs(Math.round(gap))} pts`}
-              </text>
-            </g>
-          )
-        })}
-      </svg>
-      <Tooltip tip={tip} />
-    </div>
-  )
-}
-
-/**
- * Scatter of matched items on two 0-100% axes with the y = x line.
- * points: [{ key, label, x, y, tip? }]. Points above the line: y-source higher.
- */
-export function Scatter({ points, xLabel, yLabel, height = 320, label = 'Scatter plot', color = SERIES[0] }) {
-  const [ref, width] = useWidth()
-  const [tip, setTip] = useState(null)
-  const size = Math.min(width, height + 60)
-  const pad = { l: 48, r: 16, t: 12, b: 40 }
-  const plotW = size - pad.l - pad.r
-  const plotH = height - pad.t - pad.b
-  const sx = (v) => pad.l + (v / 100) * plotW
-  const sy = (v) => pad.t + plotH - (v / 100) * plotH
-  return (
-    <div className="chart" ref={ref} onMouseLeave={() => setTip(null)}>
-      <svg width={size} height={height} role="img" aria-label={label}>
-        {[0, 25, 50, 75, 100].map((t) => (
-          <g key={t}>
-            <line x1={pad.l} x2={pad.l + plotW} y1={sy(t)} y2={sy(t)} className={t === 0 ? 'axis' : 'grid'} />
-            <line x1={sx(t)} x2={sx(t)} y1={pad.t} y2={pad.t + plotH} className={t === 0 ? 'axis' : 'grid'} />
-            <text x={pad.l - 6} y={sy(t)} className="tick" textAnchor="end" dominantBaseline="middle">
-              {t}%
-            </text>
-            <text x={sx(t)} y={pad.t + plotH + 14} className="tick" textAnchor="middle">
-              {t}%
-            </text>
-          </g>
-        ))}
-        <line x1={sx(0)} y1={sy(0)} x2={sx(100)} y2={sy(100)} className="ref-diag" />
-        <text x={sx(97)} y={sy(97) + 14} className="ref-label" textAnchor="end">
-          equal
-        </text>
-        <text x={pad.l + plotW / 2} y={height - 4} className="axis-title" textAnchor="middle">
-          {xLabel}
-        </text>
-        <text x={12} y={pad.t + plotH / 2} className="axis-title" textAnchor="middle" transform={`rotate(-90 12 ${pad.t + plotH / 2})`}>
-          {yLabel}
-        </text>
-        {points.map((p) => (
-          <circle
-            key={p.key}
-            cx={sx(p.x)}
-            cy={sy(p.y)}
-            r={5}
-            fill={color}
-            fillOpacity={0.75}
-            stroke="var(--surface)"
-            strokeWidth="1.5"
-            onMouseMove={(e) => {
-              const box = ref.current.getBoundingClientRect()
-              setTip({ x: Math.min(e.clientX - box.left + 12, width - 240), y: e.clientY - box.top - 10, content: p.tip || p.label })
-            }}
-          />
-        ))}
-      </svg>
-      <Tooltip tip={tip} />
-    </div>
   )
 }

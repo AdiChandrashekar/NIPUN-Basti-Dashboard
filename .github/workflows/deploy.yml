@@ -1,7 +1,14 @@
 name: Deploy to GitHub Pages
 
+# Builds the site and publishes it. Runs on pushes to main, and after "Build
+# dashboard data" finishes (its data commit is pushed with GITHUB_TOKEN, which
+# does not trigger push workflows).
 on:
   push:
+    branches: [main]
+  workflow_run:
+    workflows: ['Build dashboard data']
+    types: [completed]
     branches: [main]
   workflow_dispatch:
 
@@ -16,9 +23,13 @@ concurrency:
 
 jobs:
   build:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
+      # workflow_run checks out the tip of main, so the rebuilt data is included.
       - uses: actions/checkout@v4
+        with:
+          ref: main
       - uses: actions/setup-node@v4
         with:
           node-version: 20

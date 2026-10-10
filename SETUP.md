@@ -1,68 +1,75 @@
-# Going live: connect a Google Sheet
+# Auto-updating from Google Drive
 
-The dashboard works right now with no setup (it reads a bundled snapshot). This guide
-is only for making it **live**, so editing a Google Sheet updates the website with no
-code changes.
+The dashboard reads the NIPUN+ "School Wise Competency Wise Data" folder on the
+Central Square Foundation Drive:
+https://drive.google.com/drive/folders/1XmVzEYtlrOJO02qZMc21FStVWC1k-kz9
 
-Do part A once. Then every future month is just part B.
+That folder is only visible inside the CSF domain, so GitHub can't read it
+directly. A small Apps Script (`exporter/Code.js`), running as your CSF account,
+does it instead:
 
----
+```
+Drive folder (month folders: "Aug 2026", "July 2026/Grades 1-5 (Updated)", ...)
+   │  exporter/Code.js — every night at 03:00 IST, as your CSF account
+   │  • Basti files only • new or changed files only • copied unchanged
+   ▼
+data/raw/<YYYY-MM>/<file>                  one commit per run
+   │  .github/workflows/build-data.yml
+   ▼
+data-prep/build_data.py  ->  public/data/basti.json  ->  GitHub Pages
+```
 
-## Part A — one-time setup (~10 minutes)
+Once it's set up, adding a month needs nothing: drop the month's files in a new
+month folder in Drive (named like `Sep 2026`) and the site shows it the next
+morning. A file that is re-uploaded or edited is picked up again.
 
-**Step 1: Import the data into a new Google Sheet**
-1. Go to [sheets.google.com](https://sheets.google.com) → blank spreadsheet.
-2. `File → Import → Upload` → choose `data-prep/Basti_Sheets_Import.xlsx` from this repo.
-3. Choose **"Insert new sheet(s)"** when asked.
-4. Delete the empty `Sheet1` tab if one was created.
+## One-time setup (~10 minutes)
 
-You should now have two tabs: `Raw_Scores` and `Competency_Meta`.
+**1. Make a GitHub token**
+GitHub → Settings → Developer settings → Fine-grained tokens → Generate new token.
+- Repository access: **Only select repositories** → `NIPUN-Basti-Dashboard`
+- Permissions: **Contents → Read and write**
+- Copy the token.
 
-**Step 2: Publish `Raw_Scores` as a CSV link**
-1. `File → Share → Publish to web`.
-2. First dropdown: choose **Raw_Scores** (not "Entire document").
-3. Second dropdown: choose **Comma-separated values (.csv)**.
-4. Click **Publish** → copy the link it gives you.
+**2. Create the Apps Script project** (signed in as your CSF account)
+1. Go to [script.google.com](https://script.google.com) → **New project**, name it
+   "NIPUN+ Basti dashboard exporter".
+2. Replace the contents of `Code.gs` with `exporter/Code.js` from this repo.
+3. Project Settings (gear) → tick **Show "appsscript.json" manifest file** → open
+   `appsscript.json` in the editor and replace it with `exporter/appsscript.json`.
+4. Project Settings → **Script properties** → Add property `GITHUB_TOKEN` = the token.
 
-**Step 3: Publish `Competency_Meta` as a CSV link**
-- Repeat step 2, choosing the **Competency_Meta** tab instead. Copy that link too.
+**3. Start it**
+In the editor choose `setup` → **Run** → approve the permissions (read Drive,
+connect to GitHub, run on a schedule). It creates the nightly trigger and runs the
+first export straight away.
 
-You now have two links, both ending in `output=csv`.
+## Useful functions (run from the editor)
 
-**Step 4: Paste both links into the app**
-1. Open `src/config.js` in this repo.
-2. Paste your two links in:
-   ```js
-   const GOOGLE_SHEETS_RAW_SCORES_URL = 'paste your Raw_Scores link here'
-   const GOOGLE_SHEETS_COMPETENCY_META_URL = 'paste your Competency_Meta link here'
-   ```
-3. Save, commit, and push to GitHub.
+| Function | What it does |
+|---|---|
+| `runExport` | Export now instead of waiting for the night |
+| `status` | Shows the last run and which files are waiting |
+| `resetState` | Forget what was exported, so the next run re-sends everything |
 
-That's it — the deployed site now reads live from your Google Sheet.
+## Rules the build follows
 
----
+- **Basti only.** Files whose name contains "basti".
+- **Month** comes from the month folder's name ("Aug 2026" → 2026-08).
+- **Several Basti files in one month** (e.g. July's "Grades 1-3" and
+  "Grades 1-5 (Updated)"): a file from a folder with "Updated" in its name wins.
+- **Both export formats are read** — see the Definitions page on the dashboard.
 
-## Part B — adding a new month (every month, ~2 minutes)
+## Learning outcome names
 
-1. Open the Google Sheet → `Raw_Scores` tab.
-2. Go to the bottom of the sheet and paste in the new month's rows.
-3. Use the **same column order** as the existing rows — don't add new columns, don't
-   make a new tab. Just new rows at the bottom.
-   - `Month` column: `YYYY-MM`, e.g. `2026-07`.
-   - `MonthLabel` column: what should be displayed, e.g. `July`.
-4. Done. Reload the website (wait a minute or two if it doesn't show up right away —
-   Google's CSV cache refreshes on a short delay).
-
-No code, no rebuild, no redeploy. The new month appears in every chart and ranking
-automatically, and gets flagged as "preliminary" on its own if it has far fewer
-schools than the other months so far.
-
----
+Most codes in the Jul 2026+ exports (H105, M201.1, …) have no description in the
+exports themselves. Add or fix names in `data-prep/lo_descriptions.csv`
+(`Code,Desc`); the site rebuilds when that file changes.
 
 ## Troubleshooting
 
 | Problem | Fix |
 |---|---|
-| Site shows old/no data | Re-check `Publish to web` is still on for both tabs, and the links in `config.js` match exactly (including the `gid=` part) |
-| New month doesn't show up | Check `Month` is `YYYY-MM`, and competency column headers match `Competency_Meta` exactly |
-| A number looks wrong | Blank cells mean "not assessed" and are excluded from averages — they are not counted as a zero score |
+| A new month doesn't appear | Run `status` in Apps Script. Check the month folder is named like `Sep 2026` and the file name contains "Basti". Then check the "Build dashboard data" run in the repo's Actions tab. |
+| Apps Script says GitHub 401/403 | The token expired or lacks Contents: Read and write on this repo. Make a new one and update `GITHUB_TOKEN`. |
+| The build fails on a new file | The export layout changed. The Action's log names the file and the problem; `data-prep/build_data.py` handles the parsing. |

@@ -1,80 +1,56 @@
-# NIPUN Basti — Competency Dashboard
+# NIPUN+ Basti — Learning Outcomes Dashboard
 
-A React dashboard tracking school-wise NIPUN/FLN competency assessment results for
-Basti district, month over month. Built to keep working as new months of data
-arrive — no code changes needed for that part.
+A dashboard of the monthly NIPUN+ school-wise, competency-wise results for Basti
+district, with a comparison against the Partner Org's own assessment. It shares
+its design system (layout, palette, charts) with the ARP Visit Monitoring
+dashboard.
 
-**Live demo**: enable GitHub Pages for this repo (Settings → Pages → Source:
-GitHub Actions) and it deploys automatically on every push to `main`.
+Live: https://adichandrashekar.github.io/NIPUN-Basti-Dashboard/
 
-## What it shows
+**Pages**
 
-- District average trend across all tracked months
-- Score-band distribution (0% / 1–49% / 50–75% / >75%) across all competencies
-- Full competency ranking table (sortable), with month-over-month change
-- Grade × subject best/weakest competency breakdown
-- Block-level ranking and leaderboard
-- School-level highlights: highest zero-scorer counts, biggest improvers, sharpest
-  decliners
-- Automatic **low-coverage warning** for any month whose school count is far below
-  the others (e.g. a month whose data collection is still in progress) — so partial
-  data never gets silently presented as a finished trend
+- **Overview**: average school result, schools and children assessed, score bands,
+  grade × subject over time, block ranking, learning outcomes to watch.
+- **Learning outcomes**: every LO × every month heatmap, with a detail panel (trend,
+  spread of school results, blocks) and a sortable table.
+- **Blocks**: ranking, block × month heatmap, table.
+- **Schools**: every school, searchable; click one for its LO × month results.
+- **Compare with Partner Org**: NIPUN+ against the Partner Org assessment, skill by
+  skill (dot plot), spread of school results, schools assessed by both (scatter)
+  and block by block. Skill pairs are editable.
+- **Definitions**: how every number is calculated.
 
-## Quickstart
+Filters (month, block, grade, subject, learning outcome, area) apply to every page
+and live in the URL, so any view can be shared as a link. Every chart has a
+**Table** view.
+
+## Data
+
+The data updates itself from the shared Drive folder: a nightly Apps Script copies
+new Basti files into `data/raw/`, and a GitHub Action rebuilds
+`public/data/basti.json` and redeploys. Setup and rules: [`SETUP.md`](./SETUP.md).
+
+To rebuild by hand:
+
+```bash
+pip install -r data-prep/requirements.txt
+python data-prep/build_data.py
+```
+
+## Development
 
 ```bash
 npm install
 npm run dev
 ```
 
-Opens at `http://localhost:5173`. Works immediately using the bundled CSV snapshot
-in `public/data/` (April–June 2026, Basti district).
-
-## Architecture
-
-- **React + Vite**, no backend — deploys as a static site (GitHub Pages).
-- **Data model is long-format**: one row per school per month
-  (`Month, Block, School, <23 competency columns>`). Adding a month means adding
-  rows, never new columns or new sheets — see `src/lib/analysis.js`, which computes
-  every average, ranking, and distribution dynamically from however many months are
-  present.
-- **Data source** is CSV, fetched client-side (`src/lib/csv.js`) from either:
-  - the bundled snapshot in `public/data/` (default, works with no setup), or
-  - a Google Sheet published to the web as CSV, for live updates without redeploying
-    — see [`SETUP.md`](./SETUP.md) for the full walkthrough and how to add new
-    months going forward.
-- **Charts**: [Recharts](https://recharts.org/). Colors and chart conventions follow
-  a validated accessible palette (see `src/styles/theme.css`) — categorical hues in
-  fixed order, status colors reserved for score bands, dark mode is a first-class
-  second pass rather than an automatic invert.
-
-## Project layout
+React + Vite, no backend. Charts are plain SVG (`src/components/charts.jsx`).
 
 ```
-src/
-  lib/analysis.js     — all metric computation (averages, deltas, rankings, bands)
-  lib/csv.js           — fetch + parse CSV from config.js sources
-  lib/format.js        — number/percent formatting helpers
-  config.js            — data source URLs (bundled CSV by default; see SETUP.md)
-  components/          — dashboard UI pieces
-  styles/theme.css      — color tokens (light/dark), from the dataviz palette
-data-prep/
-  build_long_format.py — regenerates public/data/*.csv from raw monthly Excel files
-                          (only needed if you're rebuilding the CSV snapshot itself,
-                          not for normal month-to-month updates — see SETUP.md)
+exporter/            Apps Script: Drive folder -> data/raw (runs as a CSF account)
+data/raw/            raw NIPUN+ exports, one folder per month (written by the exporter)
+data-prep/           build_data.py -> public/data/basti.json; LO names in lo_descriptions.csv
+src/lib/data.js      every metric on the dashboard
+src/lib/partner.js   Partner Org backend, skill pairs, block-name matching
+src/pages/           one file per page
 ```
-
-## Deploying
-
-1. Push this repo to GitHub.
-2. In the repo settings, go to **Pages** and set Source to **GitHub Actions**.
-3. Push to `main` — `.github/workflows/deploy.yml` builds and deploys automatically.
-
-## Adding a new month of data
-
-If you've connected a Google Sheet (recommended — see `SETUP.md`): just append rows
-to the `Raw_Scores` tab. The live site updates without any redeploy.
-
-If you're staying on the bundled CSV snapshot instead: add the new month's raw Excel
-file, update `data-prep/build_long_format.py`'s `MONTHS` list, rerun it, commit the
-regenerated `public/data/*.csv`, and push.

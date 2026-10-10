@@ -24,13 +24,13 @@ export function CatSwatch({ cat }) {
   )
 }
 
-/** Schools assessed by NIPUN+ only, by both, by the Partner Org only. */
+/** Schools assessed by NIPUN+ only, by both, by CSF only. */
 export function CoverageBar({ onlyNipun, both, onlyPartner }) {
   const total = onlyNipun + both + onlyPartner || 1
   const segs = [
     { key: 'n', label: 'NIPUN+ only', v: onlyNipun, cls: 'cov-nipun' },
     { key: 'b', label: 'Both', v: both, cls: 'cov-both' },
-    { key: 'p', label: 'Partner Org only', v: onlyPartner, cls: 'cov-partner' },
+    { key: 'p', label: 'CSF only', v: onlyPartner, cls: 'cov-partner' },
   ]
   return (
     <div className="coverage">
@@ -56,7 +56,7 @@ export function CoverageBar({ onlyNipun, both, onlyPartner }) {
 }
 
 /**
- * 3 × 3 table: NIPUN+ band (rows, high at top) × Partner Org band (columns).
+ * 3 × 3 table: NIPUN+ band (rows, high at top) × CSF band (columns).
  * The diagonal is agreement. Cells are buttons that filter the school list.
  */
 export function AgreementMatrix({ matrix, selected, onSelect }) {
@@ -65,12 +65,12 @@ export function AgreementMatrix({ matrix, selected, onSelect }) {
   return (
     <div className="agree-wrap">
       <table className="agree">
-        <caption className="sr-only">Schools by NIPUN+ band (rows) and Partner Org band (columns)</caption>
+        <caption className="sr-only">Schools by NIPUN+ band (rows) and CSF band (columns)</caption>
         <thead>
           <tr>
             <td />
             <th colSpan={3} scope="colgroup" className="agree-axis agree-axis-p">
-              <LegendSwatch color={SOURCE.partner.color} shape={SOURCE.partner.shape} /> Partner Org
+              <LegendSwatch color={SOURCE.partner.color} shape={SOURCE.partner.shape} /> CSF
             </th>
           </tr>
           <tr>
@@ -101,7 +101,7 @@ export function AgreementMatrix({ matrix, selected, onSelect }) {
                       type="button"
                       aria-pressed={sel}
                       onClick={() => onSelect(sel ? null : key)}
-                      aria-label={`${v} schools: NIPUN+ ${nb.label}, Partner Org ${pb.label} (${CATEGORY[cat].label}). Show these schools.`}
+                      aria-label={`${v} schools: NIPUN+ ${nb.label}, CSF ${pb.label} (${CATEGORY[cat].label}). Show these schools.`}
                       disabled={!v}
                     >
                       <span className="agree-n">{v}</span>
@@ -127,7 +127,7 @@ export function AgreementMatrix({ matrix, selected, onSelect }) {
 }
 
 /**
- * Each matched school: x = Partner Org, y = NIPUN+. The shaded squares on the
+ * Each matched school: x = CSF, y = NIPUN+. The shaded squares on the
  * diagonal are "same band"; above the diagonal NIPUN+ is higher.
  */
 export function AgreementScatter({ points, label, highlight }) {
@@ -162,10 +162,10 @@ export function AgreementScatter({ points, label, highlight }) {
           NIPUN+ higher
         </text>
         <text x={sx(96)} y={sy(4)} className="zone-label" textAnchor="end" style={{ fill: SOURCE.partner.ink }}>
-          Partner Org higher
+          CSF higher
         </text>
         <text x={sx(50)} y={sy(0) + 36} className="axis-title" textAnchor="middle">
-          Partner Org · share of skill checks passed
+          CSF · share of skill checks passed
         </text>
         <text x={14} y={sy(50)} className="axis-title" textAnchor="middle" transform={`rotate(-90 14 ${sy(50)})`}>
           NIPUN+ · share of children achieving
@@ -192,7 +192,7 @@ export function AgreementScatter({ points, label, highlight }) {
 }
 
 /**
- * One row per item, both sources on one 0–100% scale, gap = NIPUN+ − Partner Org
+ * One row per item, both sources on one 0–100% scale, gap = NIPUN+ − CSF
  * written in the colour of whichever source is higher.
  */
 export function DotCompare({ rows, label }) {
@@ -218,7 +218,7 @@ export function DotCompare({ rows, label }) {
             <LegendSwatch color={s.color} shape={s.shape} /> {s.label}
           </span>
         ))}
-        <span className="legend-item muted">Gap = NIPUN+ − Partner Org</span>
+        <span className="legend-item muted">Gap = NIPUN+ − CSF</span>
       </div>
       <svg width={width} height={height} role="img" aria-label={label}>
         {[0, 25, 50, 75, 100].map((t) => (

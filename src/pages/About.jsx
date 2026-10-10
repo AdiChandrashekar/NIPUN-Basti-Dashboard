@@ -8,7 +8,7 @@ export default function About({ data }) {
       <div className="prose">
         <h3>Where the data comes from</h3>
         <p>
-          The monthly NIPUN+ "School Wise Competency Wise" exports for Basti, from the shared Drive folder <em>Nipun+ School Wise Competency Wise Data</em>. A script
+          Teachers test each child on learning outcomes in the NIPUN+ app; the app's monthly "School Wise Competency Wise" exports for Basti come from the shared Drive folder <em>Nipun+ School Wise Competency Wise Data</em>. A script
           checks the folder every night at 03:00 IST and copies any new or changed Basti file; the dashboard rebuilds itself from those files within a few minutes. When
           a month has more than one Basti file (July has "Grades 1-3" and "Grades 1-5 (Updated)"), the file in a folder named "Updated" is used.
         </p>
@@ -81,26 +81,35 @@ export default function About({ data }) {
           counts, and each school reports only the LOs it assessed. Trend charts mark the change with a dashed line. Compare months across it with care.
         </p>
 
-        <h3>Compare with Partner Org</h3>
+        <h3>Suspicious results</h3>
+        <p>
+          Seven checks look for schools whose NIPUN+ results may be inflated: mostly perfect scores (70%+ of results at 100%), far above Basti (20+ pts above the Basti
+          average for the same LO and month), above Basti on nearly everything (90%+ of results), no partial results (90%+ exactly 0% or 100%), whole class passes (2+
+          LOs where 90%+ of enrolled children were tested and all achieved it), a sudden jump (40+ pts in a month) and far above CSF (25+ pts). Thresholds sit near the
+          most unusual 5% of Basti schools. Checks measuring the same thing count once; a school is <b>Strong</b> when CSF confirms a NIPUN+ line of evidence or three
+          NIPUN+ lines agree. The details and each school's evidence are on the page itself.
+        </p>
+
+        <h3>Compare with CSF</h3>
         <dl>
           <dt>The measure</dt>
           <dd>
             Both sides are put on one measure for a subject: the share of child × skill checks that were achieved. NIPUN+: children achieved ÷ children assessed, added
-            up over the subject's learning outcomes for the grade (before July 2026, the average of the school's LO percentages). Partner Org: each child's share of
-            the subject's competencies passed (75%+ of the marks), averaged over the school's children, from the Partner Org dashboard's live backend.
+            up over the subject's learning outcomes for the grade (before July 2026, the average of the school's LO percentages). CSF: each child's share of
+            the subject's competencies passed (75%+ of the marks), averaged over the school's children, from the CSF dashboard's live backend.
           </dd>
           <dt>Same grade, same period, same schools</dt>
           <dd>
-            A Partner Org quarter is compared with the NIPUN+ months in that quarter, for one grade. Every figure that compares the two uses only schools with results
-            in both (same UDISE code), and by default only those with 5+ NIPUN+ checks and 5+ Partner Org children.
+            A CSF quarter is compared with the NIPUN+ months in that quarter, for one grade. Every figure that compares the two uses only schools with results
+            in both (same UDISE code), and by default only those with 5+ NIPUN+ checks and 5+ CSF children.
           </dd>
           <dt>Bands and agreement</dt>
           <dd>Each school is placed in a band (below 50%, 50–74%, 75%+) by each source. "Same band" means the two agree; otherwise one source is higher.</dd>
           <dt>Gap</dt>
-          <dd>NIPUN+ minus Partner Org, in percentage points. Positive means NIPUN+ is higher.</dd>
+          <dd>NIPUN+ minus CSF, in percentage points. Positive means NIPUN+ is higher.</dd>
           <dt>Why not skill by skill</dt>
           <dd>
-            Most NIPUN+ learning outcomes are unnamed in the exports and are often assessed in a different grade from the Partner Org competency for the same skill, so
+            Most NIPUN+ learning outcomes are unnamed in the exports and are often assessed in a different grade from the CSF competency for the same skill, so
             whole subjects are compared instead.
           </dd>
         </dl>

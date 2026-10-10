@@ -18,7 +18,7 @@ export const SERIES = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100']
 // ink = a darker step of the same hue, for text that names the source.
 export const SOURCE = {
   nipun: { key: 'nipun', label: 'NIPUN+', color: SERIES[0], ink: '#184f95', shape: 'circle' },
-  partner: { key: 'partner', label: 'Partner Org', color: SERIES[1], ink: '#8c3a17', shape: 'diamond' },
+  partner: { key: 'partner', label: 'CSF', color: SERIES[1], ink: '#8c3a17', shape: 'diamond' },
 }
 
 export function useWidth() {

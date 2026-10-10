@@ -27,7 +27,7 @@ export default function Compare({ data, nav }) {
     .map((m) => m.label.split(' ')[0])
     .join(' + ')
 
-  // All three Partner Org grades for the quarter: needed to know which grades can be compared.
+  // All three CSF grades for the quarter: needed to know which grades can be compared.
   useEffect(() => {
     let live = true
     setPartner({ status: 'loading' })
@@ -61,9 +61,9 @@ export default function Compare({ data, nav }) {
 
   return (
     <>
-      <PageHead crumb="Compare with Partner Org" title="Does NIPUN+ agree with the Partner Org assessment?" />
+      <PageHead crumb="Compare with CSF" title="Does NIPUN+ agree with CSF's assessment?" />
       <p className="lede">
-        Teachers record NIPUN+ results in the NIPUN+ app; the Partner Org assesses children itself, one to one. Where both looked at the same school, in the same
+        In NIPUN+, teachers test each child on the NIPUN+ app; CSF runs its own one-to-one assessment of children. Where both looked at the same school, in the same
         grade and the same months, their results should tell a similar story. This page shows where they do and where they don't.
       </p>
 
@@ -97,11 +97,11 @@ export default function Compare({ data, nav }) {
         />
       </div>
 
-      {partner.status === 'loading' && <div className="card empty">Loading the Partner Org assessment for {q.label}…</div>}
-      {partner.status === 'error' && <Notice tone="warning">Couldn't load the Partner Org data: {partner.error}. Try again in a minute.</Notice>}
+      {partner.status === 'loading' && <div className="card empty">Loading CSF's assessment for {q.label}…</div>}
+      {partner.status === 'error' && <Notice tone="warning">Couldn't load CSF data: {partner.error}. Try again in a minute.</Notice>}
       {partner.status === 'ready' && !activeGrade && (
         <Notice tone="warning">
-          No grade has results in both sources for {q.label}. The Partner Org assessed{' '}
+          No grade has results in both sources for {q.label}. CSF assessed{' '}
           {grades.filter((x) => x.children).map((x) => `Grade ${x.g}`).join(', ') || 'no children'}.
         </Notice>
       )}
@@ -117,7 +117,7 @@ export default function Compare({ data, nav }) {
               table={{
                 columns: [
                   { key: 'n', label: 'NIPUN+ band', value: (r) => r.nb.label },
-                  ...BANDS3.map((pb) => ({ key: `p${pb.key}`, label: `Partner ${pb.label}`, align: 'right', value: (r) => int(cur.matrix[r.nb.key][pb.key]) })),
+                  ...BANDS3.map((pb) => ({ key: `p${pb.key}`, label: `CSF ${pb.label}`, align: 'right', value: (r) => int(cur.matrix[r.nb.key][pb.key]) })),
                 ],
                 rows: [...BANDS3].reverse().map((nb) => ({ nb })),
               }}
@@ -141,7 +141,7 @@ export default function Compare({ data, nav }) {
             >
               <CatLegend />
               <AgreementScatter
-                label={`Schools: NIPUN+ against Partner Org, Grade ${activeGrade} ${subject}`}
+                label={`Schools: NIPUN+ against CSF, Grade ${activeGrade} ${subject}`}
                 highlight={cell ? (p) => p.cell === cell : cat ? (p) => p.cat === cat : null}
                 points={cur.matched.map((m) => ({
                   key: m.udise,
@@ -157,7 +157,7 @@ export default function Compare({ data, nav }) {
                         NIPUN+ {pct(m.n.value)} {m.n.counted ? `(${m.n.a} of ${m.n.n} checks)` : `(${m.n.los.size} LOs)`}
                       </div>
                       <div>
-                        Partner Org {pct(m.p.value)} ({m.p.students} children)
+                        CSF {pct(m.p.value)} ({m.p.students} children)
                       </div>
                       <div>Gap {fmtGap(m.gap)}</div>
                     </>
@@ -169,14 +169,14 @@ export default function Compare({ data, nav }) {
 
           <ChartCard
             title="Block by block"
-            sub={`Same schools only · Grade ${activeGrade} ${subject} · sorted by gap, NIPUN+ most above the Partner Org first`}
+            sub={`Same schools only · Grade ${activeGrade} ${subject} · sorted by gap, NIPUN+ most above CSF first`}
             table={{
               columns: [
                 { key: 'b', label: 'Block', value: (r) => r.label },
                 { key: 's', label: 'Schools in both', align: 'right', value: (r) => int(r.schools) },
                 { key: 'n', label: 'NIPUN+', align: 'right', value: (r) => pct(r.nipun) },
-                { key: 'p', label: 'Partner Org', align: 'right', value: (r) => pct(r.partner) },
-                { key: 'c', label: 'Partner children', align: 'right', value: (r) => int(r.children) },
+                { key: 'p', label: 'CSF', align: 'right', value: (r) => pct(r.partner) },
+                { key: 'c', label: 'CSF children', align: 'right', value: (r) => int(r.children) },
                 { key: 'g', label: 'Gap', align: 'right', value: (r) => fmtGap(r.nipun - r.partner) },
               ],
               rows: [...cur.blocks].sort((a, b) => b.nipun - b.partner - (a.nipun - a.partner)),
@@ -186,7 +186,7 @@ export default function Compare({ data, nav }) {
               <div className="empty">No school was assessed by both.</div>
             ) : (
               <DotCompare
-                label={`Blocks: NIPUN+ and Partner Org, Grade ${activeGrade} ${subject}`}
+                label={`Blocks: NIPUN+ and CSF, Grade ${activeGrade} ${subject}`}
                 rows={[...cur.blocks]
                   .sort((a, b) => b.nipun - b.partner - (a.nipun - a.partner))
                   .map((b) => ({
@@ -196,7 +196,7 @@ export default function Compare({ data, nav }) {
                     nipun: b.nipun,
                     partner: b.partner,
                     tipNipun: `NIPUN+ ${pct(b.nipun)} in ${b.schools} schools`,
-                    tipPartner: `Partner Org ${pct(b.partner)} from ${int(b.children)} children`,
+                    tipPartner: `CSF ${pct(b.partner)} from ${int(b.children)} children`,
                   }))}
               />
             )}
@@ -271,7 +271,7 @@ function Headline({ data, subject, setSubject, grade, period }) {
                   </div>
                   <div className="cmp-val">
                     <span className="cmp-src">
-                      <LegendSwatch color={SOURCE.partner.color} shape={SOURCE.partner.shape} /> Partner Org
+                      <LegendSwatch color={SOURCE.partner.color} shape={SOURCE.partner.shape} /> CSF
                     </span>
                     <span className="cmp-num" style={{ color: SOURCE.partner.ink }}>
                       {pct(d.partner)}
@@ -290,7 +290,7 @@ function Headline({ data, subject, setSubject, grade, period }) {
                   ) : (
                     <strong>Level in the same schools.</strong>
                   )}{' '}
-                  Same band in {pct((d.agree / n) * 100)} of schools; NIPUN+ higher in {pct((d.nipunHigher / n) * 100)}, Partner Org higher in{' '}
+                  Same band in {pct((d.agree / n) * 100)} of schools; NIPUN+ higher in {pct((d.nipunHigher / n) * 100)}, CSF higher in{' '}
                   {pct((d.partnerHigher / n) * 100)}.
                 </div>
                 <AgreeStrip d={d} />
@@ -313,7 +313,7 @@ function Headline({ data, subject, setSubject, grade, period }) {
   )
 }
 
-// A thin 100% bar: share of matched schools NIPUN+ higher / same band / Partner higher.
+// A thin 100% bar: share of matched schools NIPUN+ higher / same band / CSF higher.
 function AgreeStrip({ d }) {
   const n = d.matched.length || 1
   const segs = [
@@ -355,7 +355,7 @@ function SchoolList({ cur, cell, setCell, cat, setCat, nav, grade, subject, quar
         <div>
           <h2 className="section-title">Schools to look at</h2>
           <div className="section-sub">
-            Sorted by gap, NIPUN+ most above the Partner Org first. Where NIPUN+ is far higher, the school's NIPUN+ records may be worth checking on the next visit.
+            Sorted by gap, NIPUN+ most above CSF first. Where NIPUN+ is far higher, the school's NIPUN+ testing may be worth checking on the next visit.
           </div>
         </div>
       </div>
@@ -374,7 +374,7 @@ function SchoolList({ cur, cell, setCell, cat, setCat, nav, grade, subject, quar
         ))}
         {cell && (
           <span className="chip-btn active chip-cell">
-            NIPUN+ {BANDS3[nb].label} · Partner Org {BANDS3[pb].label}
+            NIPUN+ {BANDS3[nb].label} · CSF {BANDS3[pb].label}
             <button type="button" className="chip-x" onClick={() => setCell(null)} aria-label="Clear the matrix selection">
               ✕
             </button>
@@ -399,10 +399,10 @@ function SchoolList({ cur, cell, setCell, cat, setCat, nav, grade, subject, quar
             render: (m) => <span className="muted">{m.n.counted ? `${m.n.a} / ${m.n.n} check${m.n.n === 1 ? '' : 's'}` : `${m.n.los.size} LOs`}</span>,
             csv: (m) => (m.n.counted ? `${m.n.a}/${m.n.n}` : `${m.n.los.size} LOs`),
           },
-          { key: 'pv', label: 'Partner Org', align: 'right', value: (m) => m.p.value, render: (m) => <b style={{ color: SOURCE.partner.ink }}>{pct(m.p.value)}</b>, csv: (m) => m.p.value.toFixed(1) },
+          { key: 'pv', label: 'CSF', align: 'right', value: (m) => m.p.value, render: (m) => <b style={{ color: SOURCE.partner.ink }}>{pct(m.p.value)}</b>, csv: (m) => m.p.value.toFixed(1) },
           {
             key: 'pc',
-            label: 'Partner children',
+            label: 'CSF children',
             align: 'right',
             value: (m) => m.p.students,
             render: (m) => (
@@ -442,24 +442,24 @@ function Method({ grade, q, monthLabel }) {
           (children achieved ÷ children assessed, added up over the subject's LOs and the months). Before July 2026 the exports only hold school percentages, so
           there it is the average of the school's LO percentages.
           <br />
-          <strong>Partner Org:</strong> each child's share of the subject's competencies passed (75% or more of the marks), averaged over the school's children. Larger
+          <strong>CSF:</strong> each child's share of the subject's competencies passed (75% or more of the marks), averaged over the school's children. Larger
           schools count for more in block and district figures.
         </dd>
         <dt>Same grade, same period, same schools</dt>
         <dd>
-          NIPUN+ results for Grade {grade} children ({monthLabel || 'no months yet'}) against the Partner Org's Grade {grade} assessment for {q.label}. For Jul–Sep that is
-          the Partner Org's first cycle (July–August). Every number that compares the two uses only schools with results in both, matched by UDISE code.
+          NIPUN+ results for Grade {grade} children ({monthLabel || 'no months yet'}) against CSF's Grade {grade} assessment for {q.label}. For Jul–Sep that is
+          CSF's first cycle (July–August). Every number that compares the two uses only schools with results in both, matched by UDISE code.
         </dd>
         <dt>Why not skill by skill</dt>
         <dd>
-          The NIPUN+ exports don't name most of their learning outcomes, so they can't be matched reliably to the Partner Org's competencies, and NIPUN+ often checks a
-          skill in a different grade. The Partner Org's per-competency figures are also average marks rather than pass rates. Comparing whole subjects avoids both
+          The NIPUN+ exports don't name most of their learning outcomes, so they can't be matched reliably to CSF's competencies, and NIPUN+ often checks a
+          skill in a different grade. CSF's per-competency figures are also average marks rather than pass rates. Comparing whole subjects avoids both
           problems.
         </dd>
         <dt>Reading a gap</dt>
         <dd>
-          The two are different instruments: teachers recording in an app against a one-to-one assessment of a few children, often a handful per school. A school where
-          NIPUN+ is far above the Partner Org is worth a look, not proof of a problem — especially on small samples. By default the page only compares schools with at least {MIN_EVIDENCE} NIPUN+ checks and {MIN_EVIDENCE} Partner Org
+          The two are different instruments: teachers testing their own children on the NIPUN+ app, against CSF's one-to-one assessment of a few children, often a handful per school. A school where
+          NIPUN+ is far above CSF is worth a look, not proof of a problem — especially on small samples. By default the page only compares schools with at least {MIN_EVIDENCE} NIPUN+ checks and {MIN_EVIDENCE} CSF
           children; "All in both" adds the rest.
         </dd>
       </dl>

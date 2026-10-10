@@ -1,11 +1,11 @@
-// NIPUN+ against the Partner Org assessment, on one measure:
+// NIPUN+ against CSF assessment, on one measure:
 //
 //   share of (child × skill) checks that were achieved / passed
 //
 // NIPUN+ (Jul 2026 on): children achieved ÷ children assessed, added up over the
 //   subject's learning outcomes for the grade. (Apr–Jun files only hold school
 //   percentages, so there it is the mean of the school's LO percentages.)
-// Partner Org: the school's literacyPct / numeracyPct = the average, over its
+// CSF: the school's literacyPct / numeracyPct = the average, over its
 //   children, of the share of the subject's competencies the child passed.
 //
 // Comparisons are made in the same grade, the same quarter and, wherever a single
@@ -23,7 +23,7 @@ export const band3 = (v) => (v >= 75 ? 2 : v >= 50 ? 1 : 0)
 export const CATEGORY = {
   nipun: { key: 'nipun', label: 'NIPUN+ higher', long: 'NIPUN+ puts the school in a higher band' },
   agree: { key: 'agree', label: 'Same band', long: 'Both sources put the school in the same band' },
-  partner: { key: 'partner', label: 'Partner Org higher', long: 'The Partner Org puts the school in a higher band' },
+  partner: { key: 'partner', label: 'CSF higher', long: 'CSF puts the school in a higher band' },
 }
 
 /** NIPUN+ per-school values for a set of months, one grade and one subject. */
@@ -51,7 +51,7 @@ export function nipunSchools(data, monthKeys, grade, subject) {
   return out
 }
 
-/** Partner Org per-school values for one subject. */
+/** CSF per-school values for one subject. */
 export function partnerSchools(rows, subject) {
   const field = PARTNER_SUBJECT_FIELD[subject]
   const out = new Map()
@@ -81,8 +81,8 @@ export function partnerAggregate(list) {
 }
 
 // A school counts as having "enough data" with 5+ NIPUN+ checks (child × LO) and
-// 5+ Partner Org children. Apr–Jun NIPUN+ files have no counts, so only the
-// Partner Org side is tested there.
+// 5+ CSF children. Apr–Jun NIPUN+ files have no counts, so only the
+// CSF side is tested there.
 export const MIN_EVIDENCE = 5
 export const enoughData = (n, p) => (!n.counted || n.n >= MIN_EVIDENCE) && p.students >= MIN_EVIDENCE
 

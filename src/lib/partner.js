@@ -1,4 +1,4 @@
-// Partner Org data: the SSP dashboard's Apps Script backend, read with JSONP
+// CSF data: the SSP dashboard's Apps Script backend, read with JSONP
 // (the deployment doesn't support cross-origin fetch). Always the combined
 // programme view. Only the per-school dataset is used: it holds no child names.
 const ENDPOINT =
@@ -17,7 +17,7 @@ function jsonp(params) {
     const script = document.createElement('script')
     const timer = setTimeout(() => {
       cleanup()
-      reject(new Error('the Partner Org backend did not answer within 45 seconds'))
+      reject(new Error('the CSF backend did not answer within 45 seconds'))
     }, 45000)
     function cleanup() {
       clearTimeout(timer)
@@ -30,7 +30,7 @@ function jsonp(params) {
     }
     script.onerror = () => {
       cleanup()
-      reject(new Error('the Partner Org backend could not be reached'))
+      reject(new Error('the CSF backend could not be reached'))
     }
     script.src = url.toString()
     document.head.appendChild(script)
@@ -43,7 +43,7 @@ export function fetchPartnerSchools(quarter, grade) {
   if (!cache.has(key)) {
     const p = jsonp({ dataset: 'schools', program: PROGRAM, quarter, grade })
       .then((r) => {
-        if (!r?.ok) throw new Error(r?.error || 'the Partner Org backend returned an error')
+        if (!r?.ok) throw new Error(r?.error || 'the CSF backend returned an error')
         return (r.data || []).filter((s) => s.totalStudents > 0)
       })
       .catch((e) => {
@@ -63,7 +63,7 @@ export const QUARTERS = [
   { key: 'Q3', label: 'Oct–Dec 2026', months: ['2026-10', '2026-11', '2026-12'] },
 ]
 
-// A Partner Org school's literacyPct / numeracyPct: the average, over its children,
+// A CSF school's literacyPct / numeracyPct: the average, over its children,
 // of the share of that subject's competencies the child passed (75%+ of marks).
 export const PARTNER_SUBJECT_FIELD = { Hindi: 'literacyPct', Maths: 'numeracyPct' }
 

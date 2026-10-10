@@ -7,6 +7,7 @@ import Blocks from './pages/Blocks.jsx'
 import Schools from './pages/Schools.jsx'
 import SchoolDetail from './pages/SchoolDetail.jsx'
 import Compare from './pages/Compare.jsx'
+import Checks from './pages/Checks.jsx'
 import About from './pages/About.jsx'
 
 const NAV = [
@@ -14,12 +15,13 @@ const NAV = [
   { path: 'competencies', label: 'Learning outcomes', icon: '▤' },
   { path: 'blocks', label: 'Blocks', icon: '▦' },
   { path: 'schools', label: 'Schools', icon: '◉' },
-  { path: 'compare', label: 'Compare with Partner Org', icon: '⇄' },
+  { path: 'checks', label: 'Suspicious results', icon: '⚑', child: true },
+  { path: 'compare', label: 'Compare with CSF', icon: '⇄' },
   { path: 'about', label: 'Definitions', icon: 'ⓘ' },
 ]
 
 const FILTER_KEYS = ['m', 'block', 'grade', 'subject', 'area', 'lo']
-const NO_FILTERBAR = new Set(['compare', 'about'])
+const NO_FILTERBAR = new Set(['compare', 'about', 'checks'])
 
 // Route + filters both live in the hash so any view can be shared as a link:
 // #/schools?m=2026-08&block=Gaur&grade=2
@@ -79,6 +81,9 @@ export default function App() {
     case 'schools':
       body = route.id ? <SchoolDetail {...props} udise={route.id} /> : <Schools {...props} />
       break
+    case 'checks':
+      body = <Checks {...props} />
+      break
     case 'compare':
       body = <Compare {...props} />
       break
@@ -107,7 +112,7 @@ export default function App() {
             <div className="sidebar-sub">NIPUN+ school-wise, competency-wise results · Basti</div>
           </div>
           {NAV.map((n) => (
-            <a key={n.path} href={buildHash(n.path, null, filters)} className={`nav-item${route.page === n.path ? ' active' : ''}`} aria-current={route.page === n.path ? 'page' : undefined}>
+            <a key={n.path} href={buildHash(n.path, null, filters)} className={`nav-item${n.child ? ' nav-child' : ''}${route.page === n.path ? ' active' : ''}`} aria-current={route.page === n.path ? 'page' : undefined}>
               <span className="nav-icon" aria-hidden>
                 {n.icon}
               </span>

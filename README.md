@@ -1,7 +1,7 @@
 # NIPUN+ Basti — Learning Outcomes Dashboard
 
 A dashboard of the monthly NIPUN+ school-wise, competency-wise results for Basti
-district, with a comparison against the Partner Org's own assessment. It shares
+district, with a comparison against CSF's own assessment. It shares
 its design system (layout, palette, charts) with the ARP Visit Monitoring
 dashboard.
 
@@ -15,7 +15,11 @@ Live: https://adichandrashekar.github.io/NIPUN-Basti-Dashboard/
   spread of school results, blocks) and a sortable table.
 - **Blocks**: ranking, block × month heatmap, table.
 - **Schools**: every school, searchable; click one for its LO × month results.
-- **Compare with Partner Org**: does NIPUN+ agree with the Partner Org's own
+  - **Suspicious results**: schools whose NIPUN+ results may be inflated. Six checks
+    on the NIPUN+ data alone (each result against Basti on the same LO and month)
+    plus one against CSF's assessment, grouped into independent lines of evidence;
+    a validation chart shows the NIPUN+-only checks agree with CSF.
+- **Compare with CSF**: does NIPUN+ agree with CSF's own
   assessment? Same grade, same quarter, same schools, one measure per subject:
   headline gap, a band agreement matrix, a school scatter, blocks, and a list of
   schools where the two disagree most.
@@ -52,7 +56,8 @@ exporter/            Apps Script: Drive folder -> data/raw (runs as a CSF accoun
 data/raw/            raw NIPUN+ exports, one folder per month (written by the exporter)
 data-prep/           build_data.py -> public/data/basti.json; LO names in lo_descriptions.csv
 src/lib/data.js      every metric on the dashboard
-src/lib/partner.js   Partner Org backend and block-name matching
-src/lib/compare.js   NIPUN+ vs Partner Org matching and aggregation
+src/lib/partner.js   CSF backend and block-name matching
+src/lib/compare.js   NIPUN+ vs CSF matching and aggregation
+src/lib/checks.js    suspicious-results checks, thresholds and evidence
 src/pages/           one file per page
 ```

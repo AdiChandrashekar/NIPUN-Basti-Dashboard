@@ -2,7 +2,7 @@
 // (the deployment doesn't support cross-origin fetch). Always the combined
 // programme view. Only the per-school dataset is used: it holds no child names.
 const ENDPOINT =
-  'https://script.google.com/macros/s/AKfycbyouo7904PCiPN2EqGd9tf7glBa0gU_136N_IAmHBxieF6EP_RLKL-6iHkktp942ELs/exec'
+  'https://script.google.com/macros/s/AKfycbzGXMx23nurDcuwXHzoJ8KJvgQhc51GsLyU3cRQATZWRiJ-_ySR0BEb6NQU4tMTa2sc/exec'
 const PROGRAM = 'combined'
 
 let counter = 0
